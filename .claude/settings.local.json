@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(grep:*)",
+      "Bash(/mnt/d/Projects/github.com/AngelIntension/RentalForge/.specify/scripts/bash/create-new-feature.sh:*)",
+      "Bash(/mnt/d/Projects/github.com/AngelIntension/RentalForge/.specify/scripts/bash/check-prerequisites.sh:*)",
+      "Bash(/mnt/d/Projects/github.com/AngelIntension/RentalForge/.specify/scripts/bash/setup-plan.sh:*)",
+      "WebSearch",
+      "WebFetch(domain:www.postgresqltutorial.com)",
+      "WebFetch(domain:dotnet.testcontainers.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:testcontainers.com)",
+      "WebFetch(domain:neon.com)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:gist.github.com)",
+      "Bash(/mnt/d/Projects/github.com/AngelIntension/RentalForge/.specify/scripts/bash/update-agent-context.sh claude:*)",
+      "Bash(bash:*)"
+    ]
+  }
+}
