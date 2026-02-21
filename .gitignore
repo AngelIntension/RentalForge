@@ -400,3 +400,11 @@ FodyWeavers.xsd
 *.sln.iml
 
 # End of https://www.toptal.com/developers/gitignore/api/csharp
+
+# Sensitive configuration
+appsettings.Development.json
+.env
+secrets.json
+
+#Claude Code
+.claude/settings.local.json

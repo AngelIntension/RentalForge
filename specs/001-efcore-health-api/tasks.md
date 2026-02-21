@@ -25,9 +25,9 @@
 
 **Purpose**: Create solution, projects, and install all NuGet dependencies
 
-- [ ] T001 Create solution file `RentalForge.sln` at repository root, API project `src/RentalForge.Api/RentalForge.Api.csproj` (net10.0, web SDK), and test project `tests/RentalForge.Api.Tests/RentalForge.Api.Tests.csproj` (net10.0). Add both projects to the solution. Add project reference from test project to API project.
-- [ ] T002 [P] Add NuGet dependencies to `src/RentalForge.Api/RentalForge.Api.csproj`: Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, Microsoft.AspNetCore.OpenApi, Swashbuckle.AspNetCore
-- [ ] T003 [P] Add NuGet dependencies to `tests/RentalForge.Api.Tests/RentalForge.Api.Tests.csproj`: xunit, xunit.runner.visualstudio, Microsoft.NET.Test.Sdk, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql
+- [X] T001 Create solution file `RentalForge.sln` at repository root, API project `src/RentalForge.Api/RentalForge.Api.csproj` (net10.0, web SDK), and test project `tests/RentalForge.Api.Tests/RentalForge.Api.Tests.csproj` (net10.0). Add both projects to the solution. Add project reference from test project to API project.
+- [X] T002 [P] Add NuGet dependencies to `src/RentalForge.Api/RentalForge.Api.csproj`: Npgsql.EntityFrameworkCore.PostgreSQL, Microsoft.EntityFrameworkCore.Design, Microsoft.AspNetCore.OpenApi, Swashbuckle.AspNetCore
+- [X] T003 [P] Add NuGet dependencies to `tests/RentalForge.Api.Tests/RentalForge.Api.Tests.csproj`: xunit, xunit.runner.visualstudio, Microsoft.NET.Test.Sdk, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing, Testcontainers.PostgreSql
 
 **Checkpoint**: `dotnet build` succeeds for the entire solution
 
@@ -37,11 +37,11 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [ ] T004 Create `src/RentalForge.Api/appsettings.json` with empty `ConnectionStrings:Dvdrental` placeholder (empty string value). Update `.gitignore` at repo root to include `appsettings.Development.json`, `.env`, and `secrets.json`.
-- [ ] T005 Initialize `dotnet user-secrets` for the API project (`dotnet user-secrets init` in `src/RentalForge.Api/`). Document the `dotnet user-secrets set` command in a comment in appsettings.json for developer onboarding.
-- [ ] T006 Create minimal `src/RentalForge.Api/Data/DvdrentalContext.cs` with constructor accepting `DbContextOptions<DvdrentalContext>`. No entities yet — scaffolding fills these in during US2.
-- [ ] T007 Configure `src/RentalForge.Api/Program.cs`: register DvdrentalContext with Npgsql provider reading `ConnectionStrings:Dvdrental` from configuration, add connection string validation that fails fast at startup with actionable error if missing or empty (FR-008), enable Swagger/OpenAPI with Swagger UI in development, configure structured logging via `ILogger`.
-- [ ] T008 Create `tests/RentalForge.Api.Tests/Infrastructure/TestWebAppFactory.cs`: implement `WebApplicationFactory<Program>` with `IAsyncLifetime`, provision `PostgreSqlContainer` via Testcontainers (`postgres:18` image), override DvdrentalContext registration in `ConfigureWebHost` to use container connection string.
+- [X] T004 Create `src/RentalForge.Api/appsettings.json` with empty `ConnectionStrings:Dvdrental` placeholder (empty string value). Update `.gitignore` at repo root to include `appsettings.Development.json`, `.env`, and `secrets.json`.
+- [X] T005 Initialize `dotnet user-secrets` for the API project (`dotnet user-secrets init` in `src/RentalForge.Api/`). Document the `dotnet user-secrets set` command in a comment in appsettings.json for developer onboarding.
+- [X] T006 Create minimal `src/RentalForge.Api/Data/DvdrentalContext.cs` with constructor accepting `DbContextOptions<DvdrentalContext>`. No entities yet — scaffolding fills these in during US2.
+- [X] T007 Configure `src/RentalForge.Api/Program.cs`: register DvdrentalContext with Npgsql provider reading `ConnectionStrings:Dvdrental` from configuration, add connection string validation that fails fast at startup with actionable error if missing or empty (FR-008), enable Swagger/OpenAPI with Swagger UI in development, configure structured logging via `ILogger`.
+- [X] T008 Create `tests/RentalForge.Api.Tests/Infrastructure/TestWebAppFactory.cs`: implement `WebApplicationFactory<Program>` with `IAsyncLifetime`, provision `PostgreSqlContainer` via Testcontainers (`postgres:18` image), override DvdrentalContext registration in `ConfigureWebHost` to use container connection string.
 
 **Checkpoint**: `dotnet build` succeeds. `dotnet run --project src/RentalForge.Api` fails fast with actionable error (no connection string set via user-secrets yet). Test factory compiles.
 
@@ -57,15 +57,15 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (Principle II)**
 
-- [ ] T009 [US1] Write failing integration test `HealthEndpoint_ReturnsOk_WhenDatabaseIsReachable` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: send GET `/health` via TestWebAppFactory HttpClient, assert 200 status, assert response JSON contains non-empty `status` ("healthy"), `databaseVersion` (contains "PostgreSQL"), and `serverTime` (valid ISO 8601 timestamp). Additionally, assert response time is under 2 seconds (SC-001) using Stopwatch or HttpClient timing. Use FluentAssertions. Test class uses `IClassFixture<TestWebAppFactory>`.
-- [ ] T010 [US1] Write failing integration test `HealthEndpoint_Returns503_WhenDatabaseIsUnreachable` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: create a separate WebApplicationFactory that overrides the connection string to an invalid host, send GET `/health`, assert 503 status, assert response JSON contains `status` ("unhealthy") and non-empty `error` field. Additionally, assert response time is under 5 seconds (SC-002) to validate the timeout contract.
-- [ ] T011 [US1] Write failing integration test `App_FailsFast_WhenConnectionStringMissing` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: create a WebApplicationFactory that overrides configuration to set `ConnectionStrings:Dvdrental` to empty string, assert that creating the HttpClient (which starts the host) throws an exception with a message containing "connection string" or "Dvdrental". Validates FR-008 and SC-004.
+- [X] T009 [US1] Write failing integration test `HealthEndpoint_ReturnsOk_WhenDatabaseIsReachable` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: send GET `/health` via TestWebAppFactory HttpClient, assert 200 status, assert response JSON contains non-empty `status` ("healthy"), `databaseVersion` (contains "PostgreSQL"), and `serverTime` (valid ISO 8601 timestamp). Additionally, assert response time is under 2 seconds (SC-001) using Stopwatch or HttpClient timing. Use FluentAssertions. Test class uses `IClassFixture<TestWebAppFactory>`.
+- [X] T010 [US1] Write failing integration test `HealthEndpoint_Returns503_WhenDatabaseIsUnreachable` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: create a separate WebApplicationFactory that overrides the connection string to an invalid host, send GET `/health`, assert 503 status, assert response JSON contains `status` ("unhealthy") and non-empty `error` field. Additionally, assert response time is under 5 seconds (SC-002) to validate the timeout contract.
+- [X] T011 [US1] Write failing integration test `App_FailsFast_WhenConnectionStringMissing` in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs`: create a WebApplicationFactory that overrides configuration to set `ConnectionStrings:Dvdrental` to empty string, assert that creating the HttpClient (which starts the host) throws an exception with a message containing "connection string" or "Dvdrental". Validates FR-008 and SC-004.
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Create `HealthResponse` immutable record in `src/RentalForge.Api/Endpoints/HealthEndpoint.cs` with properties: `string Status`, `string? DatabaseVersion`, `DateTimeOffset? ServerTime`, `string? Error` (per data-model.md and Principle VI)
-- [ ] T013 [US1] Implement GET `/health` endpoint in `src/RentalForge.Api/Endpoints/HealthEndpoint.cs` as a static method mapped in Program.cs: inject DvdrentalContext, execute `SELECT version()` and `SELECT NOW()` via `Database.GetDbConnection()`, return 200 with HealthResponse on success, catch exceptions and return 503 with error message (per contracts/health-endpoint.md). Log connection failures via ILogger<> before returning 503 (Principle V: actionable structured logging for significant operations). Add OpenAPI metadata: operation summary, 200/503 response descriptions with example values (FR-011).
-- [ ] T014 [US1] Register the `/health` endpoint in `src/RentalForge.Api/Program.cs` by calling the mapping method from HealthEndpoint.cs. Run `dotnet test` and verify T009, T010, and T011 tests pass.
+- [X] T012 [US1] Create `HealthResponse` immutable record in `src/RentalForge.Api/Endpoints/HealthEndpoint.cs` with properties: `string Status`, `string? DatabaseVersion`, `DateTimeOffset? ServerTime`, `string? Error` (per data-model.md and Principle VI)
+- [X] T013 [US1] Implement GET `/health` endpoint in `src/RentalForge.Api/Endpoints/HealthEndpoint.cs` as a static method mapped in Program.cs: inject DvdrentalContext, execute `SELECT version()` and `SELECT NOW()` via `Database.GetDbConnection()`, return 200 with HealthResponse on success, catch exceptions and return 503 with error message (per contracts/health-endpoint.md). Log connection failures via ILogger<> before returning 503 (Principle V: actionable structured logging for significant operations). Add OpenAPI metadata: operation summary, 200/503 response descriptions with example values (FR-011).
+- [X] T014 [US1] Register the `/health` endpoint in `src/RentalForge.Api/Program.cs` by calling the mapping method from HealthEndpoint.cs. Run `dotnet test` and verify T009, T010, and T011 tests pass.
 
 **Checkpoint**: GET `/health` returns 200 with database version and server time against Testcontainers. Returns 503 with error against unreachable database. App fails fast with empty connection string. All three tests green. Endpoint visible in Swagger UI.
 
@@ -81,14 +81,14 @@
 
 > **NOTE: Write these tests FIRST. They will fail until the scaffold (T017) populates entity classes and DbContext configuration. This is the TDD-compatible approach for scaffolded code (Principle II — see plan.md Complexity Tracking for justification).**
 
-- [ ] T015 [US2] Write failing integration test `DbContext_RegistersAll15DbSets` in `tests/RentalForge.Api.Tests/Integration/DataLayerTests.cs`: use TestWebAppFactory to resolve DvdrentalContext from the service provider, use reflection to assert exactly 15 `DbSet<>` properties exist on DvdrentalContext. Use FluentAssertions. Test class uses `IClassFixture<TestWebAppFactory>`.
-- [ ] T016 [US2] Write failing integration test `DbContext_CanQueryFilmTable` in `tests/RentalForge.Api.Tests/Integration/DataLayerTests.cs`: use TestWebAppFactory to resolve DvdrentalContext from the service provider, execute a `Take(1).ToListAsync()` query on the films DbSet, assert no exception thrown. Use the actual scaffolded DbSet property name for films (likely `Films` — adjust after T017 scaffold completes if different). This validates entity mapping compiles and executes against a real PostgreSQL instance.
+- [X] T015 [US2] Write failing integration test `DbContext_RegistersAll15DbSets` in `tests/RentalForge.Api.Tests/Integration/DataLayerTests.cs`: use TestWebAppFactory to resolve DvdrentalContext from the service provider, use reflection to assert exactly 15 `DbSet<>` properties exist on DvdrentalContext. Use FluentAssertions. Test class uses `IClassFixture<TestWebAppFactory>`.
+- [X] T016 [US2] Write failing integration test `DbContext_CanQueryFilmTable` in `tests/RentalForge.Api.Tests/Integration/DataLayerTests.cs`: use TestWebAppFactory to resolve DvdrentalContext from the service provider, execute a `Take(1).ToListAsync()` query on the films DbSet, assert no exception thrown. Use the actual scaffolded DbSet property name for films (likely `Films` — adjust after T017 scaffold completes if different). This validates entity mapping compiles and executes against a real PostgreSQL instance.
 
 ### Implementation for User Story 2
 
-- [ ] T017 [US2] Run `dotnet ef dbcontext scaffold` against the dvdrental database into `src/RentalForge.Api/Data/` with `--output-dir Entities` and `--context-dir .` flags: scaffold all 15 tables (actor, address, category, city, country, customer, film, film_actor, film_category, inventory, language, payment, rental, staff, store). Use Fluent API configuration (no `--data-annotations` flag). Connection string provided via command-line parameter (not committed). Merge scaffolded OnModelCreating into existing DvdrentalContext.cs.
-- [ ] T018 [US2] Review and adjust scaffolded entities in `src/RentalForge.Api/Data/Entities/`: verify all 15 entity files exist with correct property names and types per data-model.md, verify custom type mappings for MpaaRating enum, NpgsqlTsVector (film.Fulltext), string[] (film.SpecialFeatures), and year domain (film.ReleaseYear as int?). Add XML documentation comments to each entity class describing its purpose and key relationships (Principle V).
-- [ ] T019 [US2] Verify DvdrentalContext.cs in `src/RentalForge.Api/Data/` registers all 15 DbSets, all foreign key relationships are configured in OnModelCreating including the staff↔store circular reference, and `dotnet build` succeeds with zero warnings from entity classes. Run `dotnet test` and verify T015 and T016 pass.
+- [X] T017 [US2] Entities written manually (scaffold failed due to dvdrental FK type mismatches: PK int vs FK smallint). All 15 entity classes created in `src/RentalForge.Api/Data/Entities/` with Fluent API configuration, matching database column types via HasColumnType("smallint") where needed.
+- [X] T018 [US2] Review and adjust entities in `src/RentalForge.Api/Data/Entities/`: all 15 entity files exist with correct property names and types per data-model.md, custom type mappings for MpaaRating enum, NpgsqlTsVector (film.Fulltext), string[] (film.SpecialFeatures), and year domain (film.ReleaseYear as int?). XML documentation comments added to each entity class (Principle V).
+- [X] T019 [US2] Verify DvdrentalContext.cs in `src/RentalForge.Api/Data/` registers all 15 DbSets, all foreign key relationships are configured in OnModelCreating including the staff↔store circular reference, and `dotnet build` succeeds with zero warnings from entity classes. Run `dotnet test` and verify T015 and T016 pass.
 
 **Checkpoint**: All 15 dvdrental entity classes exist, compile, and have XML docs. DbContext has all DbSets and relationship configurations. `dotnet build` clean. T015 and T016 green.
 
@@ -102,8 +102,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Verify TestWebAppFactory in `tests/RentalForge.Api.Tests/Infrastructure/TestWebAppFactory.cs` implements `IAsyncLifetime` correctly: `InitializeAsync` starts the PostgreSQL container, `DisposeAsync` stops and removes it. Verify Ryuk (Testcontainers resource reaper) is active for orphan cleanup. Run `dotnet test` and confirm no residual Docker containers after test completion (`docker ps -a --filter ancestor=postgres:18`). Note: if Docker is unavailable, Testcontainers produces a clear error natively — no custom handling needed (EC-003).
-- [ ] T021 [US3] Run full test suite with `dotnet test` and verify: all tests pass (T009, T010, T011, T015, T016), total execution time (including container provisioning and teardown) is under 60 seconds (SC-005), no test depends on the shared development database at localhost:5432.
+- [X] T020 [US3] Verify TestWebAppFactory in `tests/RentalForge.Api.Tests/Infrastructure/TestWebAppFactory.cs` implements `IAsyncLifetime` correctly: `InitializeAsync` starts the PostgreSQL container, `DisposeAsync` stops and removes it. Verify Ryuk (Testcontainers resource reaper) is active for orphan cleanup. Run `dotnet test` and confirm no residual Docker containers after test completion (`docker ps -a --filter ancestor=postgres:18`). Note: if Docker is unavailable, Testcontainers produces a clear error natively — no custom handling needed (EC-003).
+- [X] T021 [US3] Run full test suite with `dotnet test` and verify: all tests pass (T009, T010, T011, T015, T016), total execution time (including container provisioning and teardown) is under 60 seconds (SC-005), no test depends on the shared development database at localhost:5432.
 
 **Checkpoint**: `dotnet test` passes. Container lifecycle is fully automated. Suite completes under 60 seconds.
 
@@ -113,8 +113,8 @@
 
 **Purpose**: Final validation and cleanup
 
-- [ ] T022 Verify `/health` endpoint appears in Swagger UI at `/swagger` with documented request/response schemas, operation summary "Database health check", and both 200/503 response descriptions (SC-007)
-- [ ] T023 Run quickstart.md validation end-to-end: follow every step in `specs/001-efcore-health-api/quickstart.md` from a clean state — build, configure user-secrets, run API, curl `/health`, view Swagger, run tests — and verify each step succeeds as documented
+- [X] T022 Verify `/health` endpoint appears in Swagger UI at `/swagger` with documented request/response schemas, operation summary "Database health check", and both 200/503 response descriptions (SC-007)
+- [X] T023 Run quickstart.md validation end-to-end: follow every step in `specs/001-efcore-health-api/quickstart.md` from a clean state — build, configure user-secrets, run API, curl `/health`, view Swagger, run tests — and verify each step succeeds as documented
 
 ---
 
