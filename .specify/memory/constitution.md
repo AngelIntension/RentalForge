@@ -1,21 +1,20 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.1.0 → 1.2.0 (MINOR — Technology Stack materially expanded)
+  Version change: 1.2.0 → 1.2.1 (PATCH — secrets management clarified)
   Modified principles: none
-  Added sections: none (existing section expanded)
+  Added sections: none (new Secrets Management subsection under
+    Technology Stack; refined existing Database secrets bullet)
   Removed sections: none
   Changes:
-    - Technology Stack: added Database, ORM, Test Infrastructure,
-      and API Documentation subsections with EF Core, Npgsql,
-      PostgreSQL (dvdrental), Testcontainers, and Swagger/OpenAPI
+    - Database: replaced appsettings.Development.json / env-var
+      guidance with dotnet user-secrets reference
+    - Secrets Management: new subsection consolidating policy for
+      connection strings, API keys, and all sensitive config
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
-      (Technical Context Storage/Testing fields are dynamic)
     - .specify/templates/spec-template.md — ✅ no updates needed
-      (spec template is principle-agnostic)
     - .specify/templates/tasks-template.md — ✅ no updates needed
-      (foundational phase already covers DB setup tasks)
   Follow-up TODOs: none
 -->
 
@@ -157,9 +156,9 @@ data eliminates entire classes of concurrency and aliasing bugs.
   Clean Architecture (Principle III) and Functional Style
   (Principle VI) — e.g., convert generated classes to `record`
   types where appropriate, extract domain interfaces.
-- Connection strings MUST NOT be committed to source control.
-  Use `appsettings.Development.json` (gitignored) or environment
-  variables.
+- Connection strings MUST be managed via `dotnet user-secrets`
+  (see Secrets Management below). They MUST NOT appear in any
+  committed file.
 
 ### Testing
 
@@ -182,6 +181,22 @@ data eliminates entire classes of concurrency and aliasing bugs.
   environments.
 - OpenAPI spec MUST be generated at build time or on startup and
   MUST stay in sync with the actual endpoint contracts.
+
+### Secrets Management
+
+- **Tool**: `dotnet user-secrets` for all local development.
+  Initialize with `dotnet user-secrets init` per project.
+- Sensitive values — connection strings, API keys, credentials,
+  tokens, and any other secrets — MUST be stored in user-secrets
+  and MUST NOT be committed to source control under any
+  circumstance.
+- `appsettings.json` MAY contain non-sensitive defaults and
+  placeholder keys (e.g., `"ConnectionStrings__Dvdrental": ""`),
+  but MUST NOT contain actual secret values.
+- Files that commonly contain secrets (`appsettings.Development.json`,
+  `.env`, `secrets.json`) MUST be listed in `.gitignore`.
+- Code reviews MUST reject any PR that introduces a secret value
+  in a committed file.
 
 ### Dependency Policy
 
@@ -230,4 +245,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.2.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.2.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
