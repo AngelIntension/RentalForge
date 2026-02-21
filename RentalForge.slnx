@@ -1,0 +1,9 @@
+﻿<Solution><PropertyGroup>  <UserSecretsId>b1138f52-a772-4e09-b834-bb807248e959</UserSecretsId>
+  </PropertyGroup>
+  <Folder Name="/src/">
+    <Project Path="src/RentalForge.Api/RentalForge.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RentalForge.Api.Tests/RentalForge.Api.Tests.csproj" />
+  </Folder>
+</Solution>
