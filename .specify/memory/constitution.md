@@ -1,18 +1,21 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.0.0 → 1.1.0 (MINOR — new principle added)
-  Modified principles: none renamed
-  Added sections:
-    - Principle VI. Functional Style and Immutability
+  Version change: 1.1.0 → 1.2.0 (MINOR — Technology Stack materially expanded)
+  Modified principles: none
+  Added sections: none (existing section expanded)
   Removed sections: none
+  Changes:
+    - Technology Stack: added Database, ORM, Test Infrastructure,
+      and API Documentation subsections with EF Core, Npgsql,
+      PostgreSQL (dvdrental), Testcontainers, and Swagger/OpenAPI
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
-      (Constitution Check section is dynamic; populated at plan time)
+      (Technical Context Storage/Testing fields are dynamic)
     - .specify/templates/spec-template.md — ✅ no updates needed
-      (spec template is principle-agnostic; user stories drive content)
+      (spec template is principle-agnostic)
     - .specify/templates/tasks-template.md — ✅ no updates needed
-      (task phases already support TDD ordering and parallel markers)
+      (foundational phase already covers DB setup tasks)
   Follow-up TODOs: none
 -->
 
@@ -132,14 +135,55 @@ data eliminates entire classes of concurrency and aliasing bugs.
 
 ## Technology Stack
 
+### Core
+
 - **Language**: C# (latest stable LTS version)
 - **Runtime**: .NET (latest stable LTS version)
 - **Platform**: Linux (WSL2 for development)
 - **Build tool**: `dotnet` CLI
-- **Test framework**: xUnit (with FluentAssertions preferred)
 - **IDE/Editor**: Claude Code (primary), any editor as secondary
 - **Source control**: Git + GitHub
 - **Spec tooling**: GitHub spec-kit via Claude Code
+
+### Database
+
+- **DBMS**: PostgreSQL (existing `dvdrental` sample database)
+- **ORM**: Entity Framework Core with Npgsql provider
+  (`Npgsql.EntityFrameworkCore.PostgreSQL`)
+- **Approach**: Scaffold existing `dvdrental` tables first using
+  `dotnet ef dbcontext scaffold`, then use code-first migrations
+  for all subsequent schema changes.
+- Scaffolded entities MUST be reviewed and adjusted to align with
+  Clean Architecture (Principle III) and Functional Style
+  (Principle VI) — e.g., convert generated classes to `record`
+  types where appropriate, extract domain interfaces.
+- Connection strings MUST NOT be committed to source control.
+  Use `appsettings.Development.json` (gitignored) or environment
+  variables.
+
+### Testing
+
+- **Unit/Integration framework**: xUnit (with FluentAssertions
+  preferred)
+- **Database tests**: Testcontainers for PostgreSQL
+  (`Testcontainers.PostgreSql`). All integration tests that
+  touch the database MUST run against a disposable Testcontainers
+  instance, never against the shared development database.
+- **Test isolation**: Each test class that requires a database
+  MUST provision its own container or use a shared fixture with
+  per-test transaction rollback.
+
+### API Documentation
+
+- **Specification**: Swagger / OpenAPI
+- All HTTP API endpoints MUST be documented via OpenAPI metadata
+  (attributes, XML comments, or endpoint filters).
+- Swagger UI MUST be enabled in development and staging
+  environments.
+- OpenAPI spec MUST be generated at build time or on startup and
+  MUST stay in sync with the actual endpoint contracts.
+
+### Dependency Policy
 
 All dependencies MUST be added via NuGet. Third-party packages
 MUST be justified in the plan document before adoption. Prefer
@@ -186,4 +230,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.2.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
