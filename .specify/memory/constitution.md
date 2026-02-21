@@ -1,20 +1,17 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.2.0 → 1.2.1 (PATCH — secrets management clarified)
+  Version change: 1.2.1 → 1.3.0 (MINOR — new technology + architectural requirement)
   Modified principles: none
-  Added sections: none (new Secrets Management subsection under
-    Technology Stack; refined existing Database secrets bullet)
+  Added sections:
+    - Technology Stack > Web Framework (ASP.NET Core, controller requirement)
+    - Core subsection: added Web framework line
   Removed sections: none
-  Changes:
-    - Database: replaced appsettings.Development.json / env-var
-      guidance with dotnet user-secrets reference
-    - Secrets Management: new subsection consolidating policy for
-      connection strings, API keys, and all sensitive config
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
+    - CLAUDE.md — ✅ updated (ASP.NET Core added to Active Technologies)
   Follow-up TODOs: none
 -->
 
@@ -138,11 +135,28 @@ data eliminates entire classes of concurrency and aliasing bugs.
 
 - **Language**: C# (latest stable LTS version)
 - **Runtime**: .NET (latest stable LTS version)
+- **Web framework**: ASP.NET Core (latest stable LTS version)
 - **Platform**: Linux (WSL2 for development)
 - **Build tool**: `dotnet` CLI
 - **IDE/Editor**: Claude Code (primary), any editor as secondary
 - **Source control**: Git + GitHub
 - **Spec tooling**: GitHub spec-kit via Claude Code
+
+### Web Framework
+
+- **Framework**: ASP.NET Core (latest stable LTS version)
+- All HTTP API endpoints MUST be implemented within controller
+  classes (inheriting from `ControllerBase`).
+- Minimal APIs (`app.MapGet`, `app.MapPost`, etc.) MUST NOT be
+  used for production API endpoints.
+- Controllers MUST contain only HTTP concerns (routing, model
+  binding, response shaping) and MUST delegate business logic
+  to service classes, in accordance with Clean Architecture
+  (Principle III).
+
+**Rationale**: Controller-based routing provides a consistent,
+discoverable structure for API endpoints and enforces separation
+of HTTP concerns from domain logic.
 
 ### Database
 
@@ -245,4 +259,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.2.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.3.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
