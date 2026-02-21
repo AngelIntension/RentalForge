@@ -1,50 +1,189 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  ==================
+  Version change: 1.0.0 → 1.1.0 (MINOR — new principle added)
+  Modified principles: none renamed
+  Added sections:
+    - Principle VI. Functional Style and Immutability
+  Removed sections: none
+  Templates requiring updates:
+    - .specify/templates/plan-template.md — ✅ no updates needed
+      (Constitution Check section is dynamic; populated at plan time)
+    - .specify/templates/spec-template.md — ✅ no updates needed
+      (spec template is principle-agnostic; user stories drive content)
+    - .specify/templates/tasks-template.md — ✅ no updates needed
+      (task phases already support TDD ordering and parallel markers)
+  Follow-up TODOs: none
+-->
+
+# RentalForge Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Spec-Driven Development
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every feature MUST begin with an approved specification before any
+implementation work starts. Specifications define user stories,
+acceptance criteria, and success metrics. No code is written until
+the spec is reviewed and accepted.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Features MUST follow the spec-kit workflow:
+  specify → clarify → plan → tasks → implement.
+- Specs MUST include prioritized user stories with measurable
+  acceptance scenarios.
+- Implementation that deviates from the spec MUST be reconciled
+  by updating the spec first, then the code.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: Spec-first development prevents scope creep,
+ensures shared understanding, and produces traceable requirements.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Test-First (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+TDD is mandatory for all production code. The Red-Green-Refactor
+cycle MUST be strictly followed: write a failing test, make it
+pass with minimal code, then refactor.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Tests MUST be written and MUST fail before implementation begins.
+- Every acceptance scenario in the spec MUST map to at least one
+  automated test.
+- Test coverage MUST NOT decrease with any commit.
+- Integration tests are REQUIRED when introducing new contracts,
+  inter-module communication, or shared data models.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Test-first catches defects early, documents intent,
+and enforces incremental, verifiable progress.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Clean Architecture
+
+The codebase MUST maintain clear separation of concerns through
+layered architecture with explicit dependency direction.
+
+- Dependencies MUST point inward: outer layers depend on inner
+  layers, never the reverse.
+- Domain/business logic MUST NOT depend on infrastructure,
+  frameworks, or I/O concerns.
+- Interfaces MUST be used at layer boundaries to enforce the
+  dependency inversion principle.
+- Each layer MUST be independently testable.
+
+**Rationale**: Clean architecture keeps the domain portable,
+testable, and resilient to infrastructure changes.
+
+### IV. YAGNI and Simplicity
+
+Code MUST solve the current requirement and nothing more. Premature
+abstraction, speculative features, and over-engineering are defects.
+
+- Do NOT add code for hypothetical future requirements.
+- Prefer three similar lines over a premature abstraction.
+- Every abstraction, pattern, or indirection MUST be justified by
+  a concrete, present-day need documented in the spec or plan.
+- Complexity additions MUST be tracked in the plan's Complexity
+  Tracking table with rejected simpler alternatives.
+
+**Rationale**: Simplicity reduces cognitive load, accelerates
+delivery, and minimizes maintenance burden.
+
+### V. Observability and Maintainability
+
+All production code MUST be written for human comprehension and
+operational transparency.
+
+- Structured logging MUST be used for all significant operations
+  (not ad-hoc Console.WriteLine).
+- Error messages MUST be actionable: describe what failed, why,
+  and what the user or developer can do about it.
+- Public APIs and non-obvious internal logic MUST have XML
+  documentation comments.
+- Code MUST follow consistent naming conventions aligned with
+  .NET/C# community standards.
+
+**Rationale**: Code is read far more than it is written.
+Observable systems reduce debugging time and operational risk.
+
+### VI. Functional Style and Immutability
+
+Code MUST favor a functional style with immutable data structures.
+Side-effects MUST be minimized, isolated, and clearly signaled.
+
+- Data structures MUST be immutable by default. Use `record`,
+  `readonly record struct`, `ImmutableList<T>`,
+  `ImmutableDictionary<TKey, TValue>`, and `init`-only
+  properties. Mutable state is permitted only when justified by
+  a concrete performance or framework constraint.
+- Pure functions MUST be the default unit of logic. A pure
+  function depends only on its inputs and produces only its
+  return value — no observable side-effects.
+- Side-effecting operations (I/O, logging, database access,
+  network calls, mutable state changes) MUST be confined to
+  dedicated methods or classes whose names clearly indicate the
+  side-effect (e.g., `SaveToDatabase`, `SendNotification`,
+  `WriteLog`).
+- Side-effecting methods MUST NOT be mixed with pure business
+  logic in the same method body. Compose pure transformations
+  first, then apply side-effects at the boundary.
+- Prefer expressions over statements: use LINQ, pattern matching,
+  and switch expressions over imperative loops and conditionals
+  where readability is preserved.
+
+**Rationale**: Functional style with confined side-effects produces
+code that is easier to test, reason about, and compose. Immutable
+data eliminates entire classes of concurrency and aliasing bugs.
+
+## Technology Stack
+
+- **Language**: C# (latest stable LTS version)
+- **Runtime**: .NET (latest stable LTS version)
+- **Platform**: Linux (WSL2 for development)
+- **Build tool**: `dotnet` CLI
+- **Test framework**: xUnit (with FluentAssertions preferred)
+- **IDE/Editor**: Claude Code (primary), any editor as secondary
+- **Source control**: Git + GitHub
+- **Spec tooling**: GitHub spec-kit via Claude Code
+
+All dependencies MUST be added via NuGet. Third-party packages
+MUST be justified in the plan document before adoption. Prefer
+standard library capabilities over external packages when the
+standard library solution is adequate.
+
+## Development Workflow
+
+1. **Spec phase**: Use `/speckit.specify` → `/speckit.clarify` →
+   `/speckit.plan` → `/speckit.tasks` to produce approved design
+   artifacts before any implementation.
+2. **Branch strategy**: One feature branch per spec
+   (`###-feature-name`). All work happens on feature branches.
+3. **Commit discipline**: Commit after each completed task or
+   logical group. Commit messages MUST describe the "why".
+4. **Implementation order**: Follow tasks.md phases sequentially.
+   Within a phase, tasks marked `[P]` MAY run in parallel.
+5. **Review gates**: Each phase checkpoint MUST pass before
+   advancing. User story checkpoints MUST demonstrate independent
+   functionality.
+6. **No force pushes** to main. Feature branches merge via PR.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the highest-authority document for the
+RentalForge project. All development practices, code reviews,
+and architectural decisions MUST comply with these principles.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments**: Any change to this constitution MUST be
+  documented with rationale, approved by the project owner,
+  and accompanied by a migration plan if existing code is
+  affected.
+- **Versioning**: The constitution follows semantic versioning.
+  MAJOR for principle removals or redefinitions, MINOR for new
+  principles or material expansions, PATCH for clarifications
+  and wording fixes.
+- **Compliance**: Every PR and code review MUST verify alignment
+  with these principles. Non-compliance MUST be flagged and
+  resolved before merge.
+- **Conflict resolution**: If a principle conflicts with another,
+  the higher-numbered principle yields to the lower-numbered one
+  (Spec-Driven > Test-First > Clean Architecture > YAGNI >
+  Observability > Functional Style).
+- **Guidance file**: See `CLAUDE.md` for runtime development
+  guidance and build commands.
+
+**Version**: 1.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
