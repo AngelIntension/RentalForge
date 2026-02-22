@@ -67,3 +67,6 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 - AutoFixture MUST be used for anonymous test data generation
 - Connection strings and secrets via `dotnet user-secrets` only — never committed
 - Functional style with immutable data structures preferred (records, init-only properties)
+
+## Recent Changes
+- 004-customer-crud: Added C# 14 / .NET 10.0 (LTS, patch 10.0.3) + ASP.NET Core 10.0, EF Core 10.0 + Npgsql 10.0.0, FluentValidation 11.11, Swashbuckle 10.1.4
