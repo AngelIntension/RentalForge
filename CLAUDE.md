@@ -62,8 +62,12 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 
 ## Key Constraints
 
-- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.5.0
+- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.6.0
+- Validation MUST aggregate all errors before responding — never early-return on first failure (constitution v1.6.0)
 - TDD is NON-NEGOTIABLE — red-green-refactor for all production code
 - AutoFixture MUST be used for anonymous test data generation
 - Connection strings and secrets via `dotnet user-secrets` only — never committed
 - Functional style with immutable data structures preferred (records, init-only properties)
+
+## Recent Changes
+- 004-customer-crud: Full Customer CRUD API (GET list/search/pagination, GET by ID, POST, PUT, DELETE soft-delete). FluentValidation.AspNetCore 11.3.1, AutoFixture 4.18.1, AutoFixture.Xunit2 4.18.1. Service layer (ICustomerService/CustomerService), controller-based routing, TDD with 90 tests passing.

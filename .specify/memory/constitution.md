@@ -1,23 +1,22 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.4.0 → 1.5.0 (MINOR — new technology sections added
-    for SPA frontend, authentication, and authorization)
+  Version change: 1.5.0 → 1.6.0 (MINOR — new validation convention
+    added to Web Framework section)
   Modified principles: none
-  Added sections:
-    - Technology Stack > Frontend (React SPA)
-    - Technology Stack > Authentication & Authorization (JWT + RBAC)
+  Added sections: none
   Modified sections:
-    - Technology Stack > Web Framework: clarified as API backend for SPA
-    - Technology Stack > Core: added monorepo structure note
-    - Development Workflow: added frontend build/test step
+    - Technology Stack > Web Framework (API Backend): added
+      "Aggregate Validation Errors" convention requiring all
+      validation layers to collect every error before returning
+      a response (never early-return on first failure)
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
-      (already has web-app project structure option)
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ⚠ pending (must add React, JWT, monorepo notes)
+    - CLAUDE.md — ⚠ pending (should reference aggregate-validation
+      convention in Key Constraints)
   Follow-up TODOs: none
 -->
 
@@ -173,10 +172,26 @@ data eliminates entire classes of concurrency and aliasing bugs.
   (Principle III).
 - API responses MUST follow consistent envelope or problem-details
   conventions for success and error payloads.
+- **Aggregate validation errors**: All validation layers MUST
+  collect every error before returning a response. Early-return
+  on the first validation failure is prohibited. This applies to:
+  - Controller-level parameter validation: accumulate errors into
+    a `Dictionary<string, string[]>` and return a single
+    `ValidationProblemDetails` response.
+  - Service-level business-rule validation (e.g., FK existence
+    checks): `ServiceValidationException` MUST carry
+    `IDictionary<string, string[]>` so multiple failures are
+    reported in one throw.
+  - Any future validation layer (middleware, filters, etc.) MUST
+    follow the same aggregate-then-respond pattern.
+  The goal is to return all actionable errors in a single
+  round-trip so the API consumer can fix them all at once.
 
 **Rationale**: Controller-based routing provides a consistent,
 discoverable structure for API endpoints and enforces separation
-of HTTP concerns from domain logic.
+of HTTP concerns from domain logic. Aggregate error reporting
+reduces round-trips and improves the developer experience for
+API consumers.
 
 ### Frontend (React SPA)
 
@@ -344,4 +359,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.5.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
+**Version**: 1.6.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
