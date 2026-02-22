@@ -1,17 +1,19 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.2.1 → 1.3.0 (MINOR — new technology + architectural requirement)
+  Version change: 1.3.0 → 1.4.0 (MINOR — new testing requirement added)
   Modified principles: none
-  Added sections:
-    - Technology Stack > Web Framework (ASP.NET Core, controller requirement)
-    - Core subsection: added Web framework line
+  Added sections: none
+  Modified sections:
+    - Technology Stack > Testing: added AutoFixture requirement
+      for test data generation
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ✅ updated (ASP.NET Core added to Active Technologies)
+    - CLAUDE.md — ✅ no updates needed (AutoFixture will be added
+      to Active Technologies when first installed in a project)
   Follow-up TODOs: none
 -->
 
@@ -182,6 +184,14 @@ of HTTP concerns from domain logic.
   (`Testcontainers.PostgreSql`). All integration tests that
   touch the database MUST run against a disposable Testcontainers
   instance, never against the shared development database.
+- **Test data generation**: AutoFixture MUST be used, where
+  appropriate, to generate anonymous test data. Values that are
+  irrelevant to a test's intent (e.g., filler strings, arbitrary
+  IDs, placeholder objects) MUST be created via AutoFixture
+  rather than hand-coded literals. Hand-crafted values are
+  permitted when the specific value is meaningful to the test
+  scenario (e.g., boundary values, domain-specific states,
+  values referenced in assertions).
 - **Test isolation**: Each test class that requires a database
   MUST provision its own container or use a shared fixture with
   per-test transaction rollback.
@@ -259,4 +269,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.3.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.4.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
