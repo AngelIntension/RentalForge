@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
+using RentalForge.Api.Data.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +24,30 @@ var dataSource = dataSourceBuilder.Build();
 builder.Services.AddDbContext<DvdrentalContext>(options =>
     options.UseNpgsql(dataSource));
 
+// Dev data seeder (used by --seed CLI argument)
+builder.Services.AddScoped<DevDataSeeder>();
+
 // Controller-based routing (constitution v1.3.0)
 builder.Services.AddControllers();
 builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations());
 
 var app = builder.Build();
+
+// Handle --seed CLI argument (exit without starting web server)
+if (args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DevDataSeeder>();
+    var force = args.Contains("--force");
+
+    if (force)
+        await seeder.SeedForceAsync();
+    else
+        await seeder.SeedAsync();
+
+    return;
+}
 
 // Enable Swagger UI in development
 if (app.Environment.IsDevelopment())

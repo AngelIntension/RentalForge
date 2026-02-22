@@ -18,4 +18,8 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Data/Seeding/SeedData/*.json" />
+  </ItemGroup>
+
 </Project>
