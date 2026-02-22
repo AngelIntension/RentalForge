@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data.Entities;
+using RentalForge.Api.Data.ReferenceData;
 
 namespace RentalForge.Api.Data;
 
@@ -310,5 +311,11 @@ public class DvdrentalContext : DbContext
                 .WithMany(a => a.Stores)
                 .HasForeignKey(e => e.AddressId);
         });
+
+        // Reference data seeding (applied by both EnsureCreatedAsync and migrations)
+        modelBuilder.Entity<Language>().HasData(LanguageData.GetAll());
+        modelBuilder.Entity<Category>().HasData(CategoryData.GetAll());
+        modelBuilder.Entity<Country>().HasData(CountryData.GetAll());
+        modelBuilder.Entity<City>().HasData(CityData.GetAll());
     }
 }

@@ -19,7 +19,7 @@
 
 **Purpose**: Create directory structure for new files
 
-- [ ] T001 Create directory structure: `src/RentalForge.Api/Data/ReferenceData/`, `src/RentalForge.Api/Data/Seeding/SeedData/`
+- [X] T001 Create directory structure: `src/RentalForge.Api/Data/ReferenceData/`, `src/RentalForge.Api/Data/Seeding/SeedData/`
 
 ---
 
@@ -33,17 +33,17 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T002 [US1] Write integration tests for reference data verification in `tests/RentalForge.Api.Tests/Integration/ReferenceDataTests.cs` — tests: CountryTable has 109 rows, CityTable has 600 rows, LanguageTable has 6 rows, CategoryTable has 16 rows, cities have valid country associations, all 11 non-reference tables are empty. Use existing `TestWebAppFactory` (IClassFixture). Tests should RED because HasData not yet added.
+- [X] T002 [US1] Write integration tests for reference data verification in `tests/RentalForge.Api.Tests/Integration/ReferenceDataTests.cs` — tests: CountryTable has 109 rows, CityTable has 600 rows, LanguageTable has 6 rows, CategoryTable has 16 rows, cities have valid country associations, all 11 non-reference tables are empty. Use existing `TestWebAppFactory` (IClassFixture). Tests should RED because HasData not yet added.
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Create `LanguageData.cs` with static `GetAll()` returning 6 Language records (English, Italian, Japanese, Mandarin, French, German with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/LanguageData.cs`
-- [ ] T004 [P] [US1] Create `CategoryData.cs` with static `GetAll()` returning 16 Category records (Action through Travel with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CategoryData.cs`
-- [ ] T005 [P] [US1] Create `CountryData.cs` with static `GetAll()` returning 109 Country records (all countries from original dvdrental with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CountryData.cs`
-- [ ] T006 [P] [US1] Create `CityData.cs` with static `GetAll()` returning 600 City records (all cities with correct CountryId associations, original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CityData.cs`
-- [ ] T007 [US1] Add `HasData()` calls to `OnModelCreating` referencing the 4 reference data classes in `src/RentalForge.Api/Data/DvdrentalContext.cs` — add: `modelBuilder.Entity<Language>().HasData(LanguageData.GetAll())`, same for Category, Country, City
-- [ ] T008 [US1] Generate initial EF Core migration via `dotnet ef migrations add InitialCreate --project src/RentalForge.Api --output-dir Data/Migrations` — verify generated migration in `src/RentalForge.Api/Data/Migrations/` contains all 15 tables, mpaa_rating enum, InsertData calls for 731 reference rows, and sequence setval calls
-- [ ] T009 [US1] Run all tests — verify reference data tests pass (GREEN) and all existing tests (DataLayerTests, HealthEndpointTests) remain unaffected
+- [X] T003 [P] [US1] Create `LanguageData.cs` with static `GetAll()` returning 6 Language records (English, Italian, Japanese, Mandarin, French, German with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/LanguageData.cs`
+- [X] T004 [P] [US1] Create `CategoryData.cs` with static `GetAll()` returning 16 Category records (Action through Travel with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CategoryData.cs`
+- [X] T005 [P] [US1] Create `CountryData.cs` with static `GetAll()` returning 109 Country records (all countries from original dvdrental with original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CountryData.cs`
+- [X] T006 [P] [US1] Create `CityData.cs` with static `GetAll()` returning 600 City records (all cities with correct CountryId associations, original IDs and LastUpdate timestamps) in `src/RentalForge.Api/Data/ReferenceData/CityData.cs`
+- [X] T007 [US1] Add `HasData()` calls to `OnModelCreating` referencing the 4 reference data classes in `src/RentalForge.Api/Data/DvdrentalContext.cs` — add: `modelBuilder.Entity<Language>().HasData(LanguageData.GetAll())`, same for Category, Country, City
+- [X] T008 [US1] Generate initial EF Core migration via `dotnet ef migrations add InitialCreate --project src/RentalForge.Api --output-dir Data/Migrations` — verify generated migration in `src/RentalForge.Api/Data/Migrations/` contains all 15 tables, mpaa_rating enum, InsertData calls for 731 reference rows, and sequence setval calls
+- [X] T009 [US1] Run all tests — verify reference data tests pass (GREEN) and all existing tests (DataLayerTests, HealthEndpointTests) remain unaffected
 
 **Checkpoint**: Schema creation + reference data working. 4 reference tables populated, 11 non-reference tables empty. All tests pass.
 
@@ -57,23 +57,23 @@
 
 ### Data Preparation for User Story 2
 
-- [ ] T010 [P] [US2] Extract actor (200), address (603), and film (1000) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/actors.json`, `addresses.json`, `films.json` — use `psql` to export. Handle Film.SpecialFeatures (text[]) as JSON arrays and Film.Fulltext (tsvector) as string representation.
-- [ ] T011 [P] [US2] Extract staff (2), store (2), and customer (599) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/staff.json`, `stores.json`, `customers.json`
-- [ ] T012 [P] [US2] Extract film_actor (5462), film_category (1000), and inventory (4581) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/film_actors.json`, `film_categories.json`, `inventories.json`
-- [ ] T013 [P] [US2] Extract rental (16044) and payment (14596) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/rentals.json`, `payments.json`
-- [ ] T014 [US2] Configure all JSON files as embedded resources by adding `<EmbeddedResource Include="Data\Seeding\SeedData\*.json" />` to `src/RentalForge.Api/RentalForge.Api.csproj`
+- [X] T010 [P] [US2] Extract actor (200), address (603), and film (1000) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/actors.json`, `addresses.json`, `films.json` — use `psql` to export. Handle Film.SpecialFeatures (text[]) as JSON arrays and Film.Fulltext (tsvector) as string representation.
+- [X] T011 [P] [US2] Extract staff (2), store (2), and customer (599) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/staff.json`, `stores.json`, `customers.json`
+- [X] T012 [P] [US2] Extract film_actor (5462), film_category (1000), and inventory (4581) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/film_actors.json`, `film_categories.json`, `inventories.json`
+- [X] T013 [P] [US2] Extract rental (16044) and payment (14596) data from live dvdrental DB to JSON files: `src/RentalForge.Api/Data/Seeding/SeedData/rentals.json`, `payments.json`
+- [X] T014 [US2] Configure all JSON files as embedded resources by adding `<EmbeddedResource Include="Data\Seeding\SeedData\*.json" />` to `src/RentalForge.Api/RentalForge.Api.csproj`
 
 ### Tests for User Story 2 ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T015 [US2] Write integration tests for DevDataSeeder in `tests/RentalForge.Api.Tests/Integration/DevDataSeederTests.cs` — tests: SeedAsync populates all 11 non-reference tables with expected row counts, SeedAsync preserves reference data, SeedAsync maintains FK integrity, SeedAsync returns false and skips when data already exists, SeedForceAsync clears non-reference data and re-seeds correctly, SeedForceAsync preserves reference data, seeder logs progress per table. Use existing `TestWebAppFactory` for Testcontainers-backed DbContext. Tests should RED because DevDataSeeder not yet implemented.
+- [X] T015 [US2] Write integration tests for DevDataSeeder in `tests/RentalForge.Api.Tests/Integration/DevDataSeederTests.cs` — tests: SeedAsync populates all 11 non-reference tables with expected row counts, SeedAsync preserves reference data, SeedAsync maintains FK integrity, SeedAsync returns false and skips when data already exists, SeedForceAsync clears non-reference data and re-seeds correctly, SeedForceAsync preserves reference data, seeder logs progress per table. Use existing `TestWebAppFactory` for Testcontainers-backed DbContext. Tests should RED because DevDataSeeder not yet implemented.
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement `DevDataSeeder` class in `src/RentalForge.Api/Data/Seeding/DevDataSeeder.cs` — constructor takes `DvdrentalContext` and `ILogger<DevDataSeeder>`. `SeedAsync`: loads JSON from embedded resources via `Assembly.GetManifestResourceStream()`, checks if data exists via `AnyAsync()`, inserts in dependency order (Actor/Address/Film → Staff/Store/Customer → FilmActor/FilmCategory/Inventory → Rental → Payment) using `AddRange` + `SaveChangesAsync`. Disable FK triggers via `SET session_replication_role = 'replica'` before bulk insert, re-enable after. Reset identity sequences via `SELECT setval()`. Log per-table progress. `SeedForceAsync`: executes `TRUNCATE ... CASCADE` on all 11 non-reference tables, then calls seed logic. Per contracts/cli-seed.md output format.
-- [ ] T017 [US2] Register `DevDataSeeder` as scoped service and add `--seed [--force]` CLI argument parsing in `src/RentalForge.Api/Program.cs` — after `builder.Build()`, check `args.Contains("--seed")`, resolve DevDataSeeder from DI scope, call SeedAsync or SeedForceAsync based on `--force` flag, exit without starting web server (per contracts/cli-seed.md). Structured logging for all operations.
-- [ ] T018 [US2] Run all tests — verify dev seeder tests pass (GREEN), reference data tests still pass, and all existing tests remain unaffected
+- [X] T016 [US2] Implement `DevDataSeeder` class in `src/RentalForge.Api/Data/Seeding/DevDataSeeder.cs` — constructor takes `DvdrentalContext` and `ILogger<DevDataSeeder>`. `SeedAsync`: loads JSON from embedded resources via `Assembly.GetManifestResourceStream()`, checks if data exists via `AnyAsync()`, inserts in dependency order (Actor/Address/Film → Staff/Store/Customer → FilmActor/FilmCategory/Inventory → Rental → Payment) using `AddRange` + `SaveChangesAsync`. Disable FK triggers via `SET session_replication_role = 'replica'` before bulk insert, re-enable after. Reset identity sequences via `SELECT setval()`. Log per-table progress. `SeedForceAsync`: executes `TRUNCATE ... CASCADE` on all 11 non-reference tables, then calls seed logic. Per contracts/cli-seed.md output format.
+- [X] T017 [US2] Register `DevDataSeeder` as scoped service and add `--seed [--force]` CLI argument parsing in `src/RentalForge.Api/Program.cs` — after `builder.Build()`, check `args.Contains("--seed")`, resolve DevDataSeeder from DI scope, call SeedAsync or SeedForceAsync based on `--force` flag, exit without starting web server (per contracts/cli-seed.md). Structured logging for all operations.
+- [X] T018 [US2] Run all tests — verify dev seeder tests pass (GREEN), reference data tests still pass, and all existing tests remain unaffected
 
 **Checkpoint**: Full dev seeding working. `dotnet run -- --seed` populates all tables. `--seed --force` clears and re-seeds. Skip-if-exists behavior works. All tests pass.
 
@@ -89,10 +89,10 @@
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation (if new behavior needed)**
 
-- [ ] T019 [US3] Write idempotency tests in `tests/RentalForge.Api.Tests/Integration/ReferenceDataTests.cs` — tests: calling `EnsureCreatedAsync()` twice doesn't duplicate reference data (109 countries, not 218)
-- [ ] T020 [US3] Write idempotency and edge case tests in `tests/RentalForge.Api.Tests/Integration/DevDataSeederTests.cs` — tests: SeedAsync called twice without force (second returns false, data unchanged), SeedForceAsync called twice (correct data after each), SeedAsync on partially seeded database handles gracefully, SeedForceAsync on partially seeded database cleans and reseeds correctly
-- [ ] T021 [US3] Verify error handling in `DevDataSeeder` — ensure clear error messages for: database unreachable, schema not applied (no tables), seed data files missing/corrupt. Add error handling tests if behavior needs implementation changes. Per contracts/cli-seed.md error conditions table.
-- [ ] T022 [US3] Run all tests — verify all idempotency and edge case tests pass (GREEN) and all previous tests remain unaffected
+- [X] T019 [US3] Write idempotency tests in `tests/RentalForge.Api.Tests/Integration/ReferenceDataTests.cs` — tests: calling `EnsureCreatedAsync()` twice doesn't duplicate reference data (109 countries, not 218)
+- [X] T020 [US3] Write idempotency and edge case tests in `tests/RentalForge.Api.Tests/Integration/DevDataSeederTests.cs` — tests: SeedAsync called twice without force (second returns false, data unchanged), SeedForceAsync called twice (correct data after each), SeedAsync on partially seeded database handles gracefully, SeedForceAsync on partially seeded database cleans and reseeds correctly
+- [X] T021 [US3] Verify error handling in `DevDataSeeder` — ensure clear error messages for: database unreachable, schema not applied (no tables), seed data files missing/corrupt. Add error handling tests if behavior needs implementation changes. Per contracts/cli-seed.md error conditions table.
+- [X] T022 [US3] Run all tests — verify all idempotency and edge case tests pass (GREEN) and all previous tests remain unaffected
 
 **Checkpoint**: All operations are idempotent and safe. Edge cases handled gracefully. All tests pass.
 
@@ -102,9 +102,9 @@
 
 **Purpose**: Final verification and cleanup
 
-- [ ] T023 Run final verification against all success criteria: SC-001 (schema + reference data < 30s), SC-002 (4 reference tables populated, 11 empty), SC-003 (full seed < 60s), SC-004 (all 15 tables correct after seed), SC-005 (repeated operations no errors), SC-006 (progress output visible)
-- [ ] T024 Run quickstart.md validation — verify all commands in `specs/003-db-schema-seeding/quickstart.md` work as documented
-- [ ] T025 Run `dotnet build` and `dotnet test` to confirm zero warnings and zero failures
+- [X] T023 Run final verification against all success criteria: SC-001 (schema + reference data < 30s), SC-002 (4 reference tables populated, 11 empty), SC-003 (full seed < 60s), SC-004 (all 15 tables correct after seed), SC-005 (repeated operations no errors), SC-006 (progress output visible)
+- [X] T024 Run quickstart.md validation — verify all commands in `specs/003-db-schema-seeding/quickstart.md` work as documented
+- [X] T025 Run `dotnet build` and `dotnet test` to confirm zero warnings and zero failures
 
 ---
 
