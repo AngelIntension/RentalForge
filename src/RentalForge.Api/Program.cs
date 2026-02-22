@@ -1,7 +1,11 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
 using RentalForge.Api.Data.Seeding;
+using RentalForge.Api.Services;
+using RentalForge.Api.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +30,13 @@ builder.Services.AddDbContext<DvdrentalContext>(options =>
 
 // Dev data seeder (used by --seed CLI argument)
 builder.Services.AddScoped<DevDataSeeder>();
+
+// Customer service
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerValidator>();
 
 // Controller-based routing (constitution v1.3.0)
 builder.Services.AddControllers();

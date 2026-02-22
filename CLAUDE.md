@@ -69,4 +69,4 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 - Functional style with immutable data structures preferred (records, init-only properties)
 
 ## Recent Changes
-- 004-customer-crud: Added C# 14 / .NET 10.0 (LTS, patch 10.0.3) + ASP.NET Core 10.0, EF Core 10.0 + Npgsql 10.0.0, FluentValidation 11.11, Swashbuckle 10.1.4
+- 004-customer-crud: Full Customer CRUD API (GET list/search/pagination, GET by ID, POST, PUT, DELETE soft-delete). FluentValidation.AspNetCore 11.3.1, AutoFixture 4.18.1, AutoFixture.Xunit2 4.18.1. Service layer (ICustomerService/CustomerService), controller-based routing, TDD with 90 tests passing.
