@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
-using RentalForge.Api.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,9 +23,10 @@ var dataSource = dataSourceBuilder.Build();
 builder.Services.AddDbContext<DvdrentalContext>(options =>
     options.UseNpgsql(dataSource));
 
-// OpenAPI / Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+// Controller-based routing (constitution v1.3.0)
+builder.Services.AddControllers();
+builder.Services.AddSwaggerGen(options =>
+    options.EnableAnnotations());
 
 var app = builder.Build();
 
@@ -37,7 +37,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHealthEndpoint();
+app.MapControllers();
 
 app.Run();
 

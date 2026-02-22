@@ -77,6 +77,30 @@ public class HealthEndpointTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
+    public async Task SwaggerMetadata_ContainsHealthEndpoint_WithCorrectAttributes()
+    {
+        // Act
+        var response = await _client.GetAsync("/swagger/v1/swagger.json");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var content = await response.Content.ReadAsStringAsync();
+        var swagger = JsonDocument.Parse(content).RootElement;
+
+        var healthPath = swagger.GetProperty("paths").GetProperty("/health").GetProperty("get");
+
+        healthPath.GetProperty("operationId").GetString().Should().Be("HealthCheck");
+        healthPath.GetProperty("summary").GetString().Should().Be("Database health check");
+        healthPath.GetProperty("responses").GetProperty("200")
+            .GetProperty("description").GetString()
+            .Should().Be("Database is healthy and reachable");
+        healthPath.GetProperty("responses").GetProperty("503")
+            .GetProperty("description").GetString()
+            .Should().Be("Database is unhealthy or unreachable");
+    }
+
+    [Fact]
     public void App_FailsFast_WhenConnectionStringMissing()
     {
         // Arrange — factory with empty connection string

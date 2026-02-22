@@ -17,7 +17,7 @@
 
 **Purpose**: Create new directory structure for controller-based architecture
 
-- [ ] T001 Create `Controllers/` and `Models/` directories under `src/RentalForge.Api/`
+- [x] T001 Create `Controllers/` and `Models/` directories under `src/RentalForge.Api/`
 
 **Checkpoint**: Directory structure ready for controller and model files
 
@@ -29,7 +29,7 @@
 
 **CRITICAL**: After this phase, existing tests will fail (Red) because `MapHealthEndpoint()` is removed but no controller exists yet. This is expected and follows the Red-Green cycle.
 
-- [ ] T002 Update `src/RentalForge.Api/Program.cs` — replace `AddEndpointsApiExplorer()` with `AddControllers()`, replace `app.MapHealthEndpoint()` with `app.MapControllers()`, remove `using RentalForge.Api.Endpoints`, keep `AddSwaggerGen()` and Swagger UI middleware unchanged (research.md R1, R3)
+- [x] T002 Update `src/RentalForge.Api/Program.cs` — replace `AddEndpointsApiExplorer()` with `AddControllers()`, replace `app.MapHealthEndpoint()` with `app.MapControllers()`, remove `using RentalForge.Api.Endpoints`, keep `AddSwaggerGen()` and Swagger UI middleware unchanged (research.md R1, R3)
 
 **Checkpoint**: Program.cs uses controller routing. App builds and starts (edge case: no controllers discovered = no endpoints, app still runs). Tests expected to fail.
 
@@ -43,10 +43,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Create `HealthResponse` record in `src/RentalForge.Api/Models/HealthResponse.cs` — extract from `Endpoints/HealthEndpoint.cs`, change namespace to `RentalForge.Api.Models`, preserve exact record shape (FR-007, data-model.md)
-- [ ] T004 [US1] Create `HealthController` in `src/RentalForge.Api/Controllers/HealthController.cs` — `[ApiController]`, `[Route("")]`, `[HttpGet("health")]` action with health check logic migrated from `HealthEndpoint.MapHealthEndpoint`, OpenAPI attributes per research.md R2/R5: `[SwaggerOperation(OperationId = "HealthCheck", Summary = "Database health check")]`, `[ProducesResponseType(typeof(HealthResponse), 200)]`, `[ProducesResponseType(typeof(HealthResponse), 503)]`, `[SwaggerResponse(200, "Database is healthy and reachable")]`, `[SwaggerResponse(503, "Database is unhealthy or unreachable")]`. Include XML `<summary>` documentation on the controller class and the health check action method per constitution V (FR-001, FR-002, FR-005, contracts/health.md)
-- [ ] T005 [US1] Add Swagger metadata integration test in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs` — fetch `/swagger/v1/swagger.json`, parse JSON, assert the `/health` GET operation has OperationId "HealthCheck", summary "Database health check", 200 description "Database is healthy and reachable", 503 description "Database is unhealthy or unreachable" (SC-003, constitution II: every acceptance scenario MUST map to an automated test)
-- [ ] T006 [US1] Run `dotnet test` — verify all 4 integration tests pass: `HealthEndpoint_ReturnsOk_WhenDatabaseIsReachable`, `HealthEndpoint_Returns503_WhenDatabaseIsUnreachable`, `App_FailsFast_WhenConnectionStringMissing`, plus new Swagger metadata test (SC-001, SC-002, SC-003)
+- [x] T003 [P] [US1] Create `HealthResponse` record in `src/RentalForge.Api/Models/HealthResponse.cs` — extract from `Endpoints/HealthEndpoint.cs`, change namespace to `RentalForge.Api.Models`, preserve exact record shape (FR-007, data-model.md)
+- [x] T004 [US1] Create `HealthController` in `src/RentalForge.Api/Controllers/HealthController.cs` — `[ApiController]`, `[Route("")]`, `[HttpGet("health")]` action with health check logic migrated from `HealthEndpoint.MapHealthEndpoint`, OpenAPI attributes per research.md R2/R5: `[SwaggerOperation(OperationId = "HealthCheck", Summary = "Database health check")]`, `[ProducesResponseType(typeof(HealthResponse), 200)]`, `[ProducesResponseType(typeof(HealthResponse), 503)]`, `[SwaggerResponse(200, "Database is healthy and reachable")]`, `[SwaggerResponse(503, "Database is unhealthy or unreachable")]`. Include XML `<summary>` documentation on the controller class and the health check action method per constitution V (FR-001, FR-002, FR-005, contracts/health.md)
+- [x] T005 [US1] Add Swagger metadata integration test in `tests/RentalForge.Api.Tests/Integration/HealthEndpointTests.cs` — fetch `/swagger/v1/swagger.json`, parse JSON, assert the `/health` GET operation has OperationId "HealthCheck", summary "Database health check", 200 description "Database is healthy and reachable", 503 description "Database is unhealthy or unreachable" (SC-003, constitution II: every acceptance scenario MUST map to an automated test)
+- [x] T006 [US1] Run `dotnet test` — verify all 4 integration tests pass: `HealthEndpoint_ReturnsOk_WhenDatabaseIsReachable`, `HealthEndpoint_Returns503_WhenDatabaseIsUnreachable`, `App_FailsFast_WhenConnectionStringMissing`, plus new Swagger metadata test (SC-001, SC-002, SC-003)
 
 **Checkpoint**: Health endpoint fully functional via controller. All tests pass (Green). Swagger metadata matches pre-refactor baseline. MVP complete.
 
@@ -60,9 +60,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Delete `src/RentalForge.Api/Endpoints/` directory and all its contents (`HealthEndpoint.cs`) (FR-004)
-- [ ] T008 [US2] Run `dotnet build` — verify zero compilation errors with `Endpoints/` removed (confirms no remaining references to deleted code)
-- [ ] T009 [US2] Verify no minimal API endpoint registrations (`app.MapGet`, `app.MapPost`, `app.MapPut`, `app.MapDelete`) remain for business endpoints in `src/RentalForge.Api/Program.cs` (SC-004)
+- [x] T007 [US2] Delete `src/RentalForge.Api/Endpoints/` directory and all its contents (`HealthEndpoint.cs`) (FR-004)
+- [x] T008 [US2] Run `dotnet build` — verify zero compilation errors with `Endpoints/` removed (confirms no remaining references to deleted code)
+- [x] T009 [US2] Verify no minimal API endpoint registrations (`app.MapGet`, `app.MapPost`, `app.MapPut`, `app.MapDelete`) remain for business endpoints in `src/RentalForge.Api/Program.cs` (SC-004)
 
 **Checkpoint**: Codebase fully migrated. No minimal API artifacts remain. Build clean.
 
@@ -72,8 +72,8 @@
 
 **Purpose**: End-to-end validation across all acceptance scenarios
 
-- [ ] T010 Run full quickstart.md verification checklist from `specs/002-aspnet-core-refactor/quickstart.md` — build, run, curl, Swagger UI, test suite
-- [ ] T011 [P] Run `dotnet test` — final confirmation all 4 tests pass after complete refactor (SC-001)
+- [x] T010 Run full quickstart.md verification checklist from `specs/002-aspnet-core-refactor/quickstart.md` — build, run, curl, Swagger UI, test suite
+- [x] T011 [P] Run `dotnet test` — final confirmation all 4 tests pass after complete refactor (SC-001)
 
 ---
 
