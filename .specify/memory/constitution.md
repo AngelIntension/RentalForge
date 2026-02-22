@@ -1,19 +1,23 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.3.0 → 1.4.0 (MINOR — new testing requirement added)
+  Version change: 1.4.0 → 1.5.0 (MINOR — new technology sections added
+    for SPA frontend, authentication, and authorization)
   Modified principles: none
-  Added sections: none
+  Added sections:
+    - Technology Stack > Frontend (React SPA)
+    - Technology Stack > Authentication & Authorization (JWT + RBAC)
   Modified sections:
-    - Technology Stack > Testing: added AutoFixture requirement
-      for test data generation
+    - Technology Stack > Web Framework: clarified as API backend for SPA
+    - Technology Stack > Core: added monorepo structure note
+    - Development Workflow: added frontend build/test step
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
+      (already has web-app project structure option)
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ✅ no updates needed (AutoFixture will be added
-      to Active Technologies when first installed in a project)
+    - CLAUDE.md — ⚠ pending (must add React, JWT, monorepo notes)
   Follow-up TODOs: none
 -->
 
@@ -66,6 +70,9 @@ layered architecture with explicit dependency direction.
 - Interfaces MUST be used at layer boundaries to enforce the
   dependency inversion principle.
 - Each layer MUST be independently testable.
+- The SPA frontend and API backend are separate deployment units
+  that communicate exclusively via the RESTful API contract.
+  Neither layer may bypass the API to access the other's internals.
 
 **Rationale**: Clean architecture keeps the domain portable,
 testable, and resilient to infrastructure changes.
@@ -97,7 +104,8 @@ operational transparency.
 - Public APIs and non-obvious internal logic MUST have XML
   documentation comments.
 - Code MUST follow consistent naming conventions aligned with
-  .NET/C# community standards.
+  .NET/C# community standards (backend) and React/TypeScript
+  community standards (frontend).
 
 **Rationale**: Code is read far more than it is written.
 Observable systems reduce debugging time and operational risk.
@@ -135,18 +143,26 @@ data eliminates entire classes of concurrency and aliasing bugs.
 
 ### Core
 
-- **Language**: C# (latest stable LTS version)
-- **Runtime**: .NET (latest stable LTS version)
-- **Web framework**: ASP.NET Core (latest stable LTS version)
+- **Language (backend)**: C# (latest stable LTS version)
+- **Language (frontend)**: TypeScript (strict mode)
+- **Runtime (backend)**: .NET (latest stable LTS version)
+- **Runtime (frontend)**: Node.js (latest stable LTS version)
+- **Web framework (backend)**: ASP.NET Core (latest stable LTS)
+- **SPA framework (frontend)**: React (latest stable version)
 - **Platform**: Linux (WSL2 for development)
-- **Build tool**: `dotnet` CLI
+- **Build tool (backend)**: `dotnet` CLI
+- **Build tool (frontend)**: npm (or pnpm/yarn if justified)
 - **IDE/Editor**: Claude Code (primary), any editor as secondary
 - **Source control**: Git + GitHub
 - **Spec tooling**: GitHub spec-kit via Claude Code
+- **Repository structure**: Monorepo — backend and frontend
+  coexist in the same repository with independent build pipelines.
 
-### Web Framework
+### Web Framework (API Backend)
 
 - **Framework**: ASP.NET Core (latest stable LTS version)
+- The API backend serves as the sole data and business-logic
+  gateway for the React SPA frontend.
 - All HTTP API endpoints MUST be implemented within controller
   classes (inheriting from `ControllerBase`).
 - Minimal APIs (`app.MapGet`, `app.MapPost`, etc.) MUST NOT be
@@ -155,10 +171,63 @@ data eliminates entire classes of concurrency and aliasing bugs.
   binding, response shaping) and MUST delegate business logic
   to service classes, in accordance with Clean Architecture
   (Principle III).
+- API responses MUST follow consistent envelope or problem-details
+  conventions for success and error payloads.
 
 **Rationale**: Controller-based routing provides a consistent,
 discoverable structure for API endpoints and enforces separation
 of HTTP concerns from domain logic.
+
+### Frontend (React SPA)
+
+- **Framework**: React with TypeScript (strict mode enabled)
+- The frontend MUST be a Single Page Application (SPA) that
+  communicates with the backend exclusively via the RESTful API.
+- The frontend MUST NOT contain business logic that belongs in
+  the backend. Client-side logic is limited to UI state,
+  presentation formatting, and navigation.
+- All API calls from the frontend MUST go through a centralized
+  API client layer (not scattered `fetch` calls).
+- The frontend MUST handle authentication state (JWT storage,
+  token refresh, logout on expiry) and role-based UI rendering
+  (showing/hiding features based on the user's role).
+- Frontend tests MUST cover critical user interactions and
+  component rendering.
+
+**Rationale**: A dedicated SPA frontend provides a responsive
+user experience while keeping all business logic and data access
+on the server behind the API boundary.
+
+### Authentication & Authorization
+
+- **Framework**: ASP.NET Core Identity for user and role
+  management.
+- **Token format**: JSON Web Tokens (JWT) issued by the backend
+  and validated on every API request via bearer token
+  authentication.
+- **Roles**: The system MUST support at minimum three roles:
+  - **Admin**: Full system access including user management,
+    configuration, and all staff/customer capabilities.
+  - **Staff**: Manages day-to-day operations (e.g., rentals,
+    inventory, customer service).
+  - **Customer**: End-user access limited to browsing, renting,
+    and managing their own account/profile.
+- Endpoints MUST enforce authorization via `[Authorize]`
+  attributes with role policies. Unauthenticated access MUST be
+  explicitly opted into with `[AllowAnonymous]`.
+- JWT tokens MUST include role claims. Token lifetime, refresh
+  strategy, and revocation policy MUST be defined in the feature
+  spec before implementation.
+- Passwords MUST be hashed using ASP.NET Core Identity's default
+  hashing (PBKDF2). Custom password hashing MUST NOT be used
+  without explicit justification.
+- Sensitive auth endpoints (login, register, token refresh) MUST
+  be rate-limited.
+
+**Rationale**: ASP.NET Core Identity provides battle-tested user
+management with built-in password hashing, lockout, and role
+support. JWT bearer tokens enable stateless authentication
+suitable for SPA clients.
 
 ### Database
 
@@ -178,8 +247,10 @@ of HTTP concerns from domain logic.
 
 ### Testing
 
-- **Unit/Integration framework**: xUnit (with FluentAssertions
-  preferred)
+- **Unit/Integration framework (backend)**: xUnit (with
+  FluentAssertions preferred)
+- **Frontend testing**: React Testing Library (with Jest or Vitest
+  as the test runner)
 - **Database tests**: Testcontainers for PostgreSQL
   (`Testcontainers.PostgreSql`). All integration tests that
   touch the database MUST run against a disposable Testcontainers
@@ -211,9 +282,9 @@ of HTTP concerns from domain logic.
 - **Tool**: `dotnet user-secrets` for all local development.
   Initialize with `dotnet user-secrets init` per project.
 - Sensitive values — connection strings, API keys, credentials,
-  tokens, and any other secrets — MUST be stored in user-secrets
-  and MUST NOT be committed to source control under any
-  circumstance.
+  tokens, JWT signing keys, and any other secrets — MUST be
+  stored in user-secrets and MUST NOT be committed to source
+  control under any circumstance.
 - `appsettings.json` MAY contain non-sensitive defaults and
   placeholder keys (e.g., `"ConnectionStrings__Dvdrental": ""`),
   but MUST NOT contain actual secret values.
@@ -224,10 +295,11 @@ of HTTP concerns from domain logic.
 
 ### Dependency Policy
 
-All dependencies MUST be added via NuGet. Third-party packages
-MUST be justified in the plan document before adoption. Prefer
-standard library capabilities over external packages when the
-standard library solution is adequate.
+All dependencies MUST be added via NuGet (backend) or npm
+(frontend). Third-party packages MUST be justified in the plan
+document before adoption. Prefer standard library capabilities
+over external packages when the standard library solution is
+adequate.
 
 ## Development Workflow
 
@@ -243,7 +315,10 @@ standard library solution is adequate.
 5. **Review gates**: Each phase checkpoint MUST pass before
    advancing. User story checkpoints MUST demonstrate independent
    functionality.
-6. **No force pushes** to main. Feature branches merge via PR.
+6. **Build verification**: Both `dotnet build` (backend) and
+   frontend build MUST succeed before committing. All tests
+   (backend + frontend) MUST pass.
+7. **No force pushes** to main. Feature branches merge via PR.
 
 ## Governance
 
@@ -269,4 +344,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.4.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
+**Version**: 1.5.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
