@@ -62,7 +62,8 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 
 ## Key Constraints
 
-- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.5.0
+- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.6.0
+- Validation MUST aggregate all errors before responding — never early-return on first failure (constitution v1.6.0)
 - TDD is NON-NEGOTIABLE — red-green-refactor for all production code
 - AutoFixture MUST be used for anonymous test data generation
 - Connection strings and secrets via `dotnet user-secrets` only — never committed

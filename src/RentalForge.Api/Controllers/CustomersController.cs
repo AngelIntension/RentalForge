@@ -24,13 +24,13 @@ public class CustomersController(ICustomerService customerService) : ControllerB
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
+        var errors = new Dictionary<string, string[]>();
         if (page < 1)
-            return ValidationProblem(new ValidationProblemDetails(
-                new Dictionary<string, string[]> { ["page"] = ["'Page' must be greater than or equal to '1'."] }));
-
+            errors["page"] = ["'Page' must be greater than or equal to '1'."];
         if (pageSize < 1 || pageSize > 100)
-            return ValidationProblem(new ValidationProblemDetails(
-                new Dictionary<string, string[]> { ["pageSize"] = ["'Page Size' must be between 1 and 100."] }));
+            errors["pageSize"] = ["'Page Size' must be between 1 and 100."];
+        if (errors.Count > 0)
+            return ValidationProblem(new ValidationProblemDetails(errors));
 
         pageSize = Math.Min(pageSize, 100);
         var result = await customerService.GetCustomersAsync(search, page, pageSize);
@@ -66,7 +66,9 @@ public class CustomersController(ICustomerService customerService) : ControllerB
         }
         catch (ServiceValidationException ex)
         {
-            ModelState.AddModelError(ex.PropertyName, ex.Message);
+            foreach (var (key, messages) in ex.Errors)
+                foreach (var message in messages)
+                    ModelState.AddModelError(key, message);
             return ValidationProblem(ModelState);
         }
     }
@@ -88,7 +90,9 @@ public class CustomersController(ICustomerService customerService) : ControllerB
         }
         catch (ServiceValidationException ex)
         {
-            ModelState.AddModelError(ex.PropertyName, ex.Message);
+            foreach (var (key, messages) in ex.Errors)
+                foreach (var message in messages)
+                    ModelState.AddModelError(key, message);
             return ValidationProblem(ModelState);
         }
     }

@@ -50,13 +50,16 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
 
     public async Task<CustomerResponse> CreateCustomerAsync(CreateCustomerRequest request)
     {
-        var storeExists = await db.Stores.AnyAsync(s => s.StoreId == request.StoreId);
-        if (!storeExists)
-            throw new ServiceValidationException("storeId", $"Store with ID {request.StoreId} does not exist.");
+        var errors = new Dictionary<string, string[]>();
 
-        var addressExists = await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId);
-        if (!addressExists)
-            throw new ServiceValidationException("addressId", $"Address with ID {request.AddressId} does not exist.");
+        if (!await db.Stores.AnyAsync(s => s.StoreId == request.StoreId))
+            errors["storeId"] = [$"Store with ID {request.StoreId} does not exist."];
+
+        if (!await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId))
+            errors["addressId"] = [$"Address with ID {request.AddressId} does not exist."];
+
+        if (errors.Count > 0)
+            throw new ServiceValidationException(errors);
 
         var customer = new Customer
         {
@@ -88,13 +91,16 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
         if (customer is null)
             return null;
 
-        var storeExists = await db.Stores.AnyAsync(s => s.StoreId == request.StoreId);
-        if (!storeExists)
-            throw new ServiceValidationException("storeId", $"Store with ID {request.StoreId} does not exist.");
+        var errors = new Dictionary<string, string[]>();
 
-        var addressExists = await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId);
-        if (!addressExists)
-            throw new ServiceValidationException("addressId", $"Address with ID {request.AddressId} does not exist.");
+        if (!await db.Stores.AnyAsync(s => s.StoreId == request.StoreId))
+            errors["storeId"] = [$"Store with ID {request.StoreId} does not exist."];
+
+        if (!await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId))
+            errors["addressId"] = [$"Address with ID {request.AddressId} does not exist."];
+
+        if (errors.Count > 0)
+            throw new ServiceValidationException(errors);
 
         customer.FirstName = request.FirstName;
         customer.LastName = request.LastName;

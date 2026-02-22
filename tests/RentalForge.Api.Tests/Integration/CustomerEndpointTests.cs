@@ -156,6 +156,20 @@ public class CustomerEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLif
     }
 
     [Fact]
+    public async Task GetCustomers_BothPageAndPageSizeInvalid_ReturnsBothErrors()
+    {
+        var response = await _client.GetAsync("/api/customers?page=0&pageSize=0");
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonDocument.Parse(content).RootElement;
+        var errors = problem.GetProperty("errors");
+        errors.TryGetProperty("page", out _).Should().BeTrue();
+        errors.TryGetProperty("pageSize", out _).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task GetCustomers_ExcludesDeactivatedCustomers()
     {
         // Charlie (9003) is deactivated in test data
@@ -325,6 +339,28 @@ public class CustomerEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLif
     }
 
     [Fact]
+    public async Task CreateCustomer_BothStoreIdAndAddressIdInvalid_ReturnsBothErrors()
+    {
+        var request = new CreateCustomerRequest
+        {
+            FirstName = "Test",
+            LastName = "User",
+            StoreId = 99999,
+            AddressId = 99999
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/customers", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonDocument.Parse(content).RootElement;
+        var errors = problem.GetProperty("errors");
+        errors.TryGetProperty("storeId", out _).Should().BeTrue();
+        errors.TryGetProperty("addressId", out _).Should().BeTrue();
+    }
+
+    [Fact]
     public async Task CreateCustomer_AppearsInGetList()
     {
         var request = new CreateCustomerRequest
@@ -421,6 +457,28 @@ public class CustomerEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLif
         var response = await _client.PutAsJsonAsync("/api/customers/9003", request);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateCustomer_BothStoreIdAndAddressIdInvalid_ReturnsBothErrors()
+    {
+        var request = new UpdateCustomerRequest
+        {
+            FirstName = "Test",
+            LastName = "User",
+            StoreId = 99999,
+            AddressId = 99999
+        };
+
+        var response = await _client.PutAsJsonAsync("/api/customers/9001", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var content = await response.Content.ReadAsStringAsync();
+        var problem = JsonDocument.Parse(content).RootElement;
+        var errors = problem.GetProperty("errors");
+        errors.TryGetProperty("storeId", out _).Should().BeTrue();
+        errors.TryGetProperty("addressId", out _).Should().BeTrue();
     }
 
     [Fact]
