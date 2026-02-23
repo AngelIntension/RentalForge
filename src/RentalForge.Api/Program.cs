@@ -42,7 +42,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerValidator>();
 // Controller-based routing (constitution v1.3.0)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+    {
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations());
 
