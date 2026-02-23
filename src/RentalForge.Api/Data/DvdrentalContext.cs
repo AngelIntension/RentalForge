@@ -29,8 +29,8 @@ public class DvdrentalContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Register PostgreSQL mpaa_rating enum
-        modelBuilder.HasPostgresEnum<MpaaRating>("mpaa_rating");
+        // PostgreSQL mpaa_rating enum is configured via UseNpgsql(o => o.MapEnum<MpaaRating>())
+        // in Program.cs (EF 9.0+ recommended approach). HasPostgresEnum is no longer needed.
 
         // Actor
         modelBuilder.Entity<Actor>(entity =>
@@ -140,7 +140,8 @@ public class DvdrentalContext : DbContext
             entity.Property(e => e.Rating).HasColumnName("rating").HasDefaultValue(MpaaRating.G);
             entity.Property(e => e.LastUpdate).HasColumnName("last_update").HasDefaultValueSql("now()");
             entity.Property(e => e.SpecialFeatures).HasColumnName("special_features").HasColumnType("text[]");
-            entity.Property(e => e.Fulltext).HasColumnName("fulltext").HasColumnType("tsvector");
+            entity.Property(e => e.Fulltext).HasColumnName("fulltext").HasColumnType("tsvector")
+                .HasDefaultValueSql("''::tsvector");
 
             entity.HasOne(e => e.Language)
                 .WithMany(l => l.Films)
