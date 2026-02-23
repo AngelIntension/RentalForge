@@ -1,23 +1,35 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.5.0 → 1.6.0 (MINOR — new validation convention
-    added to Web Framework section)
-  Modified principles: none
+  Version change: 1.6.0 → 1.7.0 (MINOR — replaced exception-based
+    validation flow with Ardalis.Result pattern; added Result pattern
+    to Technology Stack; added functional error handling guidance to
+    Principle VI)
+  Modified principles:
+    - VI. Functional Style and Immutability: added bullet requiring
+      Result types over exceptions for expected outcomes
   Added sections: none
   Modified sections:
-    - Technology Stack > Web Framework (API Backend): added
-      "Aggregate Validation Errors" convention requiring all
-      validation layers to collect every error before returning
-      a response (never early-return on first failure)
+    - Technology Stack > Core: added Ardalis.Result ecosystem
+      (Ardalis.Result, Ardalis.Result.AspNetCore,
+      Ardalis.Result.FluentValidation)
+    - Technology Stack > Web Framework (API Backend): replaced
+      ServiceValidationException-based validation with Ardalis.Result
+      pattern. Service methods now MUST return Result<T>/Result instead
+      of throwing exceptions for routine validation, not-found, and
+      business-rule outcomes.
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ⚠ pending (should reference aggregate-validation
-      convention in Key Constraints)
-  Follow-up TODOs: none
+    - CLAUDE.md — ⚠ pending (should reference Ardalis.Result in
+      Active Technologies and update Key Constraints to reflect
+      Result pattern over exceptions)
+  Follow-up TODOs:
+    - Existing CustomerService and CustomersController use
+      ServiceValidationException. A refactoring feature spec should
+      migrate them to Ardalis.Result.
 -->
 
 # RentalForge Constitution
@@ -133,10 +145,18 @@ Side-effects MUST be minimized, isolated, and clearly signaled.
 - Prefer expressions over statements: use LINQ, pattern matching,
   and switch expressions over imperative loops and conditionals
   where readability is preserved.
+- Expected outcomes (validation failures, not-found, conflict,
+  unauthorized) MUST be modeled as return values using a Result
+  type — not as thrown exceptions. Exceptions are reserved for
+  truly exceptional, unexpected failures (e.g., network outage,
+  corrupted state). This enables composable error handling via
+  `Map`/`Bind` and eliminates hidden control-flow side-effects.
 
 **Rationale**: Functional style with confined side-effects produces
 code that is easier to test, reason about, and compose. Immutable
 data eliminates entire classes of concurrency and aliasing bugs.
+Result types make error paths explicit in the type signature,
+enabling compiler-assisted correctness.
 
 ## Technology Stack
 
@@ -148,6 +168,11 @@ data eliminates entire classes of concurrency and aliasing bugs.
 - **Runtime (frontend)**: Node.js (latest stable LTS version)
 - **Web framework (backend)**: ASP.NET Core (latest stable LTS)
 - **SPA framework (frontend)**: React (latest stable version)
+- **Result pattern**: Ardalis.Result with companion packages
+  (`Ardalis.Result.AspNetCore` for HTTP response translation,
+  `Ardalis.Result.FluentValidation` for FluentValidation bridge).
+  All service methods that can fail for expected reasons MUST
+  return `Result<T>` or `Result` instead of throwing exceptions.
 - **Platform**: Linux (WSL2 for development)
 - **Build tool (backend)**: `dotnet` CLI
 - **Build tool (frontend)**: npm (or pnpm/yarn if justified)
@@ -172,6 +197,25 @@ data eliminates entire classes of concurrency and aliasing bugs.
   (Principle III).
 - API responses MUST follow consistent envelope or problem-details
   conventions for success and error payloads.
+- **Result-based error handling**: Service methods MUST return
+  `Result<T>` or `Result` (from Ardalis.Result) to communicate
+  outcomes. Exceptions MUST NOT be used for expected outcomes
+  such as validation failures, not-found, or business-rule
+  violations (see Principle VI). Specifically:
+  - Service methods MUST return `Result<T>.Invalid(errors)` with
+    `List<ValidationError>` for validation failures (including
+    FK existence checks). Each `ValidationError` MUST carry an
+    `Identifier` (field name) and `ErrorMessage`.
+  - Service methods MUST return `Result<T>.NotFound()` when a
+    requested resource does not exist or is inactive.
+  - FluentValidation results MUST be bridged via the
+    `Ardalis.Result.FluentValidation` package using the
+    `.AsErrors()` extension method.
+  - Controllers MUST translate `Result<T>` to HTTP responses,
+    either via the `[TranslateResultToActionResult]` attribute
+    from `Ardalis.Result.AspNetCore`, the `.ToActionResult()`
+    extension method, or explicit `result.Status` switch
+    expressions.
 - **Aggregate validation errors**: All validation layers MUST
   collect every error before returning a response. Early-return
   on the first validation failure is prohibited. This applies to:
@@ -179,9 +223,8 @@ data eliminates entire classes of concurrency and aliasing bugs.
     a `Dictionary<string, string[]>` and return a single
     `ValidationProblemDetails` response.
   - Service-level business-rule validation (e.g., FK existence
-    checks): `ServiceValidationException` MUST carry
-    `IDictionary<string, string[]>` so multiple failures are
-    reported in one throw.
+    checks): accumulate `ValidationError` instances and return
+    `Result<T>.Invalid(errors)` with the full list.
   - Any future validation layer (middleware, filters, etc.) MUST
     follow the same aggregate-then-respond pattern.
   The goal is to return all actionable errors in a single
@@ -189,9 +232,11 @@ data eliminates entire classes of concurrency and aliasing bugs.
 
 **Rationale**: Controller-based routing provides a consistent,
 discoverable structure for API endpoints and enforces separation
-of HTTP concerns from domain logic. Aggregate error reporting
-reduces round-trips and improves the developer experience for
-API consumers.
+of HTTP concerns from domain logic. Result types make error paths
+explicit in method signatures, eliminate exception-based control
+flow for routine outcomes, and enable functional composition via
+`Map`/`Bind`. Aggregate error reporting reduces round-trips and
+improves the developer experience for API consumers.
 
 ### Frontend (React SPA)
 
@@ -359,4 +404,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.6.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
+**Version**: 1.7.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
