@@ -72,6 +72,7 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 - Service methods MUST return `Result<T>` / `Result` (Ardalis.Result) for expected outcomes (validation failures, not-found, business-rule violations); exceptions reserved for unexpected failures only
 - DTOs MUST be flat and simple: return IDs for related entities (not embedded objects); inline related data as flat properties for one-level relationships; use nested structures only for multi-level relationships (constitution v1.8.0)
 - Enum serialization MUST be configured globally via JSON serializer options (not per-property); converter MUST accept both numeric and string values (constitution v1.8.1)
+- DTO enum properties MUST use the domain enum type (e.g., `MpaaRating?`), not `string`; manual `.ToString()` conversion is prohibited (constitution v1.9.0)
 
 ## Recent Changes
 - 004-customer-crud: Full Customer CRUD API (GET list/search/pagination, GET by ID, POST, PUT, DELETE soft-delete). FluentValidation.AspNetCore 11.3.1, AutoFixture 4.18.1, AutoFixture.Xunit2 4.18.1. Service layer (ICustomerService/CustomerService), controller-based routing, TDD with 90 tests passing.

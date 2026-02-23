@@ -1,23 +1,24 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.8.0 → 1.8.1 (PATCH — clarified enum
-    serialization rule to specify global registration via JSON
-    serializer options instead of per-property [JsonConverter]
-    attributes; added guidance on [JsonStringEnumMemberName] for
-    non-standard enum member names)
+  Version change: 1.8.1 → 1.9.0 (MINOR — added type-fidelity
+    rule to DTO structure: DTO properties that represent enum
+    values MUST use the domain enum type, not string. Prevents
+    manual .ToString() conversion that bypasses the global JSON
+    enum converter.)
   Modified principles: none
   Added sections: none
   Modified sections:
     - Technology Stack > Web Framework (API Backend) > DTO
-      structure: rewrote enum converter bullet to mandate global
-      registration and document [JsonStringEnumMemberName] usage.
+      structure: added new bullet requiring enum-typed DTO
+      properties instead of string representations.
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ✅ updated (enum constraint in Key Constraints)
+    - CLAUDE.md — ✅ updated (enum type-fidelity constraint added
+      to Key Constraints)
   Follow-up TODOs: none
 -->
 
@@ -228,6 +229,11 @@ enabling compiler-assisted correctness.
     values on input. Enum members whose display name differs from
     the C# identifier (e.g., `PG-13` for `Pg13`) MUST use
     `[JsonStringEnumMemberName]` attributes.
+  - DTO properties that represent enum values MUST use the
+    domain enum type (e.g., `MpaaRating?`), not `string`.
+    Manual `.ToString()` conversion in service or mapping code
+    is prohibited — it bypasses the global JSON enum converter
+    and loses type safety.
   - DTOs MUST return identifiers (IDs) for related entities
     rather than embedding the related entity's data, wherever
     possible. For example, return `LanguageId` instead of a
@@ -420,4 +426,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.8.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
+**Version**: 1.9.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
