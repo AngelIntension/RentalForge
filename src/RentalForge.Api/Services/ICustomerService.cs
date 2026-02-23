@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using RentalForge.Api.Models;
 
 namespace RentalForge.Api.Services;
@@ -8,8 +9,8 @@ namespace RentalForge.Api.Services;
 public interface ICustomerService
 {
     Task<PagedResponse<CustomerResponse>> GetCustomersAsync(string? search, int page, int pageSize);
-    Task<CustomerResponse?> GetCustomerByIdAsync(int id);
-    Task<CustomerResponse> CreateCustomerAsync(CreateCustomerRequest request);
-    Task<CustomerResponse?> UpdateCustomerAsync(int id, UpdateCustomerRequest request);
-    Task<bool> DeactivateCustomerAsync(int id);
+    Task<Result<CustomerResponse>> GetCustomerByIdAsync(int id);
+    Task<Result<CustomerResponse>> CreateCustomerAsync(CreateCustomerRequest request);
+    Task<Result<CustomerResponse>> UpdateCustomerAsync(int id, UpdateCustomerRequest request);
+    Task<Result> DeactivateCustomerAsync(int id);
 }

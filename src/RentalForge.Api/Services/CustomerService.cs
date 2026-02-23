@@ -1,3 +1,6 @@
+using Ardalis.Result;
+using Ardalis.Result.FluentValidation;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
@@ -8,7 +11,11 @@ namespace RentalForge.Api.Services;
 /// <summary>
 /// Implements customer CRUD operations against the dvdrental database.
 /// </summary>
-public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logger) : ICustomerService
+public class CustomerService(
+    DvdrentalContext db,
+    ILogger<CustomerService> logger,
+    IValidator<CreateCustomerRequest> createValidator,
+    IValidator<UpdateCustomerRequest> updateValidator) : ICustomerService
 {
     public async Task<PagedResponse<CustomerResponse>> GetCustomersAsync(string? search, int page, int pageSize)
     {
@@ -38,28 +45,31 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
         return new PagedResponse<CustomerResponse>(items, page, pageSize, totalCount, totalPages);
     }
 
-    public async Task<CustomerResponse?> GetCustomerByIdAsync(int id)
+    public async Task<Result<CustomerResponse>> GetCustomerByIdAsync(int id)
     {
         var customer = await db.Customers
             .Where(c => c.CustomerId == id && c.Activebool)
             .Select(c => ToResponse(c))
             .FirstOrDefaultAsync();
 
-        return customer;
+        return customer is not null
+            ? Result<CustomerResponse>.Success(customer)
+            : Result<CustomerResponse>.NotFound();
     }
 
-    public async Task<CustomerResponse> CreateCustomerAsync(CreateCustomerRequest request)
+    public async Task<Result<CustomerResponse>> CreateCustomerAsync(CreateCustomerRequest request)
     {
-        var errors = new Dictionary<string, string[]>();
+        var validationResult = await createValidator.ValidateAsync(request);
+        var allErrors = validationResult.AsErrors();
 
         if (!await db.Stores.AnyAsync(s => s.StoreId == request.StoreId))
-            errors["storeId"] = [$"Store with ID {request.StoreId} does not exist."];
+            allErrors.Add(new ValidationError("storeId", $"Store with ID {request.StoreId} does not exist."));
 
         if (!await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId))
-            errors["addressId"] = [$"Address with ID {request.AddressId} does not exist."];
+            allErrors.Add(new ValidationError("addressId", $"Address with ID {request.AddressId} does not exist."));
 
-        if (errors.Count > 0)
-            throw new ServiceValidationException(errors);
+        if (allErrors.Count > 0)
+            return Result<CustomerResponse>.Invalid(allErrors);
 
         var customer = new Customer
         {
@@ -80,27 +90,28 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
         logger.LogInformation("Created customer {CustomerId} ({FirstName} {LastName})",
             customer.CustomerId, customer.FirstName, customer.LastName);
 
-        return ToResponse(customer);
+        return Result<CustomerResponse>.Created(ToResponse(customer));
     }
 
-    public async Task<CustomerResponse?> UpdateCustomerAsync(int id, UpdateCustomerRequest request)
+    public async Task<Result<CustomerResponse>> UpdateCustomerAsync(int id, UpdateCustomerRequest request)
     {
         var customer = await db.Customers
             .FirstOrDefaultAsync(c => c.CustomerId == id && c.Activebool);
 
         if (customer is null)
-            return null;
+            return Result<CustomerResponse>.NotFound();
 
-        var errors = new Dictionary<string, string[]>();
+        var validationResult = await updateValidator.ValidateAsync(request);
+        var allErrors = validationResult.AsErrors();
 
         if (!await db.Stores.AnyAsync(s => s.StoreId == request.StoreId))
-            errors["storeId"] = [$"Store with ID {request.StoreId} does not exist."];
+            allErrors.Add(new ValidationError("storeId", $"Store with ID {request.StoreId} does not exist."));
 
         if (!await db.Addresses.AnyAsync(a => a.AddressId == request.AddressId))
-            errors["addressId"] = [$"Address with ID {request.AddressId} does not exist."];
+            allErrors.Add(new ValidationError("addressId", $"Address with ID {request.AddressId} does not exist."));
 
-        if (errors.Count > 0)
-            throw new ServiceValidationException(errors);
+        if (allErrors.Count > 0)
+            return Result<CustomerResponse>.Invalid(allErrors);
 
         customer.FirstName = request.FirstName;
         customer.LastName = request.LastName;
@@ -114,16 +125,16 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
         logger.LogInformation("Updated customer {CustomerId} ({FirstName} {LastName})",
             customer.CustomerId, customer.FirstName, customer.LastName);
 
-        return ToResponse(customer);
+        return Result<CustomerResponse>.Success(ToResponse(customer));
     }
 
-    public async Task<bool> DeactivateCustomerAsync(int id)
+    public async Task<Result> DeactivateCustomerAsync(int id)
     {
         var customer = await db.Customers
             .FirstOrDefaultAsync(c => c.CustomerId == id && c.Activebool);
 
         if (customer is null)
-            return false;
+            return Result.NotFound();
 
         customer.Activebool = false;
         customer.Active = 0;
@@ -133,7 +144,7 @@ public class CustomerService(DvdrentalContext db, ILogger<CustomerService> logge
 
         logger.LogInformation("Deactivated customer {CustomerId}", customer.CustomerId);
 
-        return true;
+        return Result.NoContent();
     }
 
     private static CustomerResponse ToResponse(Customer c) => new(
