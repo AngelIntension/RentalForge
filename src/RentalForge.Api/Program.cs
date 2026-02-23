@@ -36,6 +36,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 // Film service
 builder.Services.AddScoped<IFilmService, FilmService>();
 
+// Rental service
+builder.Services.AddScoped<IRentalService, RentalService>();
+
 // FluentValidation (validators injected into service layer, no auto-validation)
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerValidator>();
 

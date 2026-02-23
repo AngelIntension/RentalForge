@@ -1,0 +1,15 @@
+{
+  "workspace": {
+    "id": "14e82a2a-9bc0-4d37-8833-633714c8c6d7"
+  },
+  "entities": {
+    "environments": [],
+    "flows": [],
+    "globals": [],
+    "mocks": [],
+    "specs": [
+      "..\\src\\RentalForge.Api\\obj\\Debug\\net10.0\\EndpointInfo\\RentalForge.Api.json"
+    ],
+    "collections": []
+  }
+}
