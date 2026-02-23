@@ -1,3 +1,4 @@
+using Ardalis.Result;
 using Microsoft.AspNetCore.Mvc;
 using RentalForge.Api.Models;
 using RentalForge.Api.Services;
@@ -46,8 +47,13 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found or deactivated")]
     public async Task<IActionResult> GetCustomer(int id)
     {
-        var customer = await customerService.GetCustomerByIdAsync(id);
-        return customer is not null ? Ok(customer) : NotFound();
+        var result = await customerService.GetCustomerByIdAsync(id);
+        return result.Status switch
+        {
+            ResultStatus.Ok => Ok(result.Value),
+            ResultStatus.NotFound => NotFound(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 
     /// <summary>
@@ -59,18 +65,13 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateCustomer([FromBody] CreateCustomerRequest request)
     {
-        try
+        var result = await customerService.CreateCustomerAsync(request);
+        return result.Status switch
         {
-            var customer = await customerService.CreateCustomerAsync(request);
-            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
-        }
-        catch (ServiceValidationException ex)
-        {
-            foreach (var (key, messages) in ex.Errors)
-                foreach (var message in messages)
-                    ModelState.AddModelError(key, message);
-            return ValidationProblem(ModelState);
-        }
+            ResultStatus.Created => CreatedAtAction(nameof(GetCustomer), new { id = result.Value.Id }, result.Value),
+            ResultStatus.Invalid => InvalidResult(result.ValidationErrors),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 
     /// <summary>
@@ -83,18 +84,14 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found or deactivated")]
     public async Task<IActionResult> UpdateCustomer(int id, [FromBody] UpdateCustomerRequest request)
     {
-        try
+        var result = await customerService.UpdateCustomerAsync(id, request);
+        return result.Status switch
         {
-            var customer = await customerService.UpdateCustomerAsync(id, request);
-            return customer is not null ? Ok(customer) : NotFound();
-        }
-        catch (ServiceValidationException ex)
-        {
-            foreach (var (key, messages) in ex.Errors)
-                foreach (var message in messages)
-                    ModelState.AddModelError(key, message);
-            return ValidationProblem(ModelState);
-        }
+            ResultStatus.Ok => Ok(result.Value),
+            ResultStatus.NotFound => NotFound(),
+            ResultStatus.Invalid => InvalidResult(result.ValidationErrors),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
     }
 
     /// <summary>
@@ -106,7 +103,19 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found or already deactivated")]
     public async Task<IActionResult> DeactivateCustomer(int id)
     {
-        var deactivated = await customerService.DeactivateCustomerAsync(id);
-        return deactivated ? NoContent() : NotFound();
+        var result = await customerService.DeactivateCustomerAsync(id);
+        return result.Status switch
+        {
+            ResultStatus.NoContent => NoContent(),
+            ResultStatus.NotFound => NotFound(),
+            _ => StatusCode(StatusCodes.Status500InternalServerError)
+        };
+    }
+
+    private IActionResult InvalidResult(IEnumerable<ValidationError> errors)
+    {
+        foreach (var error in errors)
+            ModelState.AddModelError(error.Identifier, error.ErrorMessage);
+        return ValidationProblem(ModelState);
     }
 }

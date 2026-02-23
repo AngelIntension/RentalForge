@@ -49,6 +49,7 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 - C# 14 / .NET 10.0 (LTS, patch 10.0.3)
 - ASP.NET Core 10.0
 - EF Core 10.0 + Npgsql.EntityFrameworkCore.PostgreSQL 10.0.0
+- Ardalis.Result 10.1.0 + Ardalis.Result.AspNetCore 10.1.0 + Ardalis.Result.FluentValidation 10.1.0
 - Swashbuckle.AspNetCore 10.1.4 + Microsoft.AspNetCore.OpenApi 10.0.3
 
 ### Testing
@@ -68,6 +69,8 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 - AutoFixture MUST be used for anonymous test data generation
 - Connection strings and secrets via `dotnet user-secrets` only — never committed
 - Functional style with immutable data structures preferred (records, init-only properties)
+- Service methods MUST return `Result<T>` / `Result` (Ardalis.Result) for expected outcomes (validation failures, not-found, business-rule violations); exceptions reserved for unexpected failures only
 
 ## Recent Changes
 - 004-customer-crud: Full Customer CRUD API (GET list/search/pagination, GET by ID, POST, PUT, DELETE soft-delete). FluentValidation.AspNetCore 11.3.1, AutoFixture 4.18.1, AutoFixture.Xunit2 4.18.1. Service layer (ICustomerService/CustomerService), controller-based routing, TDD with 90 tests passing.
+- 005-result-pattern-refactor: Migrated from exception-based error handling (ServiceValidationException) to Ardalis.Result pattern. Service methods return Result<T>/Result; controllers use explicit result.Status switch expressions. FluentValidation moved from ASP.NET pipeline auto-validation into service layer for error aggregation via .AsErrors() bridge. ServiceValidationException deleted. All 93 tests pass unchanged (behavior-preserving refactoring).

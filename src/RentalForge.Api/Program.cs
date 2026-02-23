@@ -1,5 +1,4 @@
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
@@ -34,8 +33,7 @@ builder.Services.AddScoped<DevDataSeeder>();
 // Customer service
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
-// FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
+// FluentValidation (validators injected into service layer, no auto-validation)
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerValidator>();
 
 // Controller-based routing (constitution v1.3.0)
