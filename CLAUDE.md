@@ -8,7 +8,7 @@ RentalForge is a full-stack SPA rental management application for learning spec-
 
 ## Architecture
 
-- **Backend**: C# ASP.NET Core RESTful API with controller-based routing (no minimal APIs) per constitution v1.5.0
+- **Backend**: C# ASP.NET Core RESTful API with controller-based routing (no minimal APIs) per constitution v1.8.0
 - **Frontend**: React SPA with TypeScript (strict mode) — not yet scaffolded
 - **Auth**: ASP.NET Core Identity + JWT bearer tokens; roles: Admin, Staff, Customer
 - **Database**: PostgreSQL 18 (`dvdrental` sample database at localhost:5432)
@@ -63,13 +63,15 @@ dotnet run --project src/RentalForge.Api -- --seed     # run with dev data seedi
 
 ## Key Constraints
 
-- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.6.0
-- Validation MUST aggregate all errors before responding — never early-return on first failure (constitution v1.6.0)
+- All API endpoints MUST use controller-based routing (no minimal APIs) per constitution v1.8.0
+- Validation MUST aggregate all errors before responding — never early-return on first failure (constitution v1.8.0)
 - TDD is NON-NEGOTIABLE — red-green-refactor for all production code
 - AutoFixture MUST be used for anonymous test data generation
 - Connection strings and secrets via `dotnet user-secrets` only — never committed
 - Functional style with immutable data structures preferred (records, init-only properties)
 - Service methods MUST return `Result<T>` / `Result` (Ardalis.Result) for expected outcomes (validation failures, not-found, business-rule violations); exceptions reserved for unexpected failures only
+- DTOs MUST be flat and simple: return IDs for related entities (not embedded objects); inline related data as flat properties for one-level relationships; use nested structures only for multi-level relationships (constitution v1.8.0)
+- Enum DTO properties MUST use a JSON converter accepting both numeric and string values (constitution v1.8.0)
 
 ## Recent Changes
 - 004-customer-crud: Full Customer CRUD API (GET list/search/pagination, GET by ID, POST, PUT, DELETE soft-delete). FluentValidation.AspNetCore 11.3.1, AutoFixture 4.18.1, AutoFixture.Xunit2 4.18.1. Service layer (ICustomerService/CustomerService), controller-based routing, TDD with 90 tests passing.

@@ -1,35 +1,27 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.6.0 → 1.7.0 (MINOR — replaced exception-based
-    validation flow with Ardalis.Result pattern; added Result pattern
-    to Technology Stack; added functional error handling guidance to
-    Principle VI)
-  Modified principles:
-    - VI. Functional Style and Immutability: added bullet requiring
-      Result types over exceptions for expected outcomes
+  Version change: 1.7.0 → 1.8.0 (MINOR — added DTO structure
+    guidelines to Web Framework section: enum converters, flat-by-
+    default DTOs, ID-over-data preference, nesting depth rules)
+  Modified principles: none
   Added sections: none
   Modified sections:
-    - Technology Stack > Core: added Ardalis.Result ecosystem
-      (Ardalis.Result, Ardalis.Result.AspNetCore,
-      Ardalis.Result.FluentValidation)
-    - Technology Stack > Web Framework (API Backend): replaced
-      ServiceValidationException-based validation with Ardalis.Result
-      pattern. Service methods now MUST return Result<T>/Result instead
-      of throwing exceptions for routine validation, not-found, and
-      business-rule outcomes.
+    - Technology Stack > Web Framework (API Backend): added
+      "DTO structure" subsection with four rules governing enum
+      serialization, related-entity representation, nesting depth,
+      and general DTO simplicity.
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ⚠ pending (should reference Ardalis.Result in
-      Active Technologies and update Key Constraints to reflect
-      Result pattern over exceptions)
+    - CLAUDE.md — ⚠ pending (should add DTO structure rules to
+      Key Constraints section)
   Follow-up TODOs:
-    - Existing CustomerService and CustomersController use
-      ServiceValidationException. A refactoring feature spec should
-      migrate them to Ardalis.Result.
+    - Existing Customer DTOs should be reviewed for compliance
+      with the new DTO structure rules (enum converters, flat
+      structure, IDs over embedded data).
 -->
 
 # RentalForge Constitution
@@ -230,13 +222,37 @@ enabling compiler-assisted correctness.
   The goal is to return all actionable errors in a single
   round-trip so the API consumer can fix them all at once.
 
+- **DTO structure**: API Data Transfer Objects MUST be kept tight,
+  simple, and flat wherever possible. Specifically:
+  - Enum properties MUST use a JSON enum converter that accepts
+    both numeric and string values for readability (e.g.,
+    `[JsonConverter(typeof(JsonStringEnumConverter))]` or
+    equivalent configuration that permits either form).
+  - DTOs MUST return identifiers (IDs) for related entities
+    rather than embedding the related entity's data, wherever
+    possible. For example, return `LanguageId` instead of a
+    nested `Language` object.
+  - When related data MUST be included (e.g., the spec requires
+    displaying actor names or category names alongside a film),
+    and the relationship is one level deep, the related fields
+    MUST be inlined into a flat structure (e.g., `LanguageName`
+    as a top-level string property, `Actors` as a list of
+    strings). Nested DTOs MUST NOT be used for single-level
+    relationships.
+  - When the relationship is more than one level deep (e.g., an
+    actor's filmography with each film's categories), nested
+    structures are permitted and SHOULD be used to preserve
+    clarity.
+
 **Rationale**: Controller-based routing provides a consistent,
 discoverable structure for API endpoints and enforces separation
 of HTTP concerns from domain logic. Result types make error paths
 explicit in method signatures, eliminate exception-based control
 flow for routine outcomes, and enable functional composition via
 `Map`/`Bind`. Aggregate error reporting reduces round-trips and
-improves the developer experience for API consumers.
+improves the developer experience for API consumers. Flat, ID-
+centric DTOs minimize payload size, reduce coupling between API
+layers, and keep the contract simple for frontend consumers.
 
 ### Frontend (React SPA)
 
@@ -404,4 +420,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.7.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
+**Version**: 1.8.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
