@@ -1,27 +1,24 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.7.0 → 1.8.0 (MINOR — added DTO structure
-    guidelines to Web Framework section: enum converters, flat-by-
-    default DTOs, ID-over-data preference, nesting depth rules)
+  Version change: 1.8.0 → 1.8.1 (PATCH — clarified enum
+    serialization rule to specify global registration via JSON
+    serializer options instead of per-property [JsonConverter]
+    attributes; added guidance on [JsonStringEnumMemberName] for
+    non-standard enum member names)
   Modified principles: none
   Added sections: none
   Modified sections:
-    - Technology Stack > Web Framework (API Backend): added
-      "DTO structure" subsection with four rules governing enum
-      serialization, related-entity representation, nesting depth,
-      and general DTO simplicity.
+    - Technology Stack > Web Framework (API Backend) > DTO
+      structure: rewrote enum converter bullet to mandate global
+      registration and document [JsonStringEnumMemberName] usage.
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ⚠ pending (should add DTO structure rules to
-      Key Constraints section)
-  Follow-up TODOs:
-    - Existing Customer DTOs should be reviewed for compliance
-      with the new DTO structure rules (enum converters, flat
-      structure, IDs over embedded data).
+    - CLAUDE.md — ✅ updated (enum constraint in Key Constraints)
+  Follow-up TODOs: none
 -->
 
 # RentalForge Constitution
@@ -224,10 +221,13 @@ enabling compiler-assisted correctness.
 
 - **DTO structure**: API Data Transfer Objects MUST be kept tight,
   simple, and flat wherever possible. Specifically:
-  - Enum properties MUST use a JSON enum converter that accepts
-    both numeric and string values for readability (e.g.,
-    `[JsonConverter(typeof(JsonStringEnumConverter))]` or
-    equivalent configuration that permits either form).
+  - Enum serialization MUST be configured globally via the JSON
+    serializer options (e.g., registering `JsonStringEnumConverter`
+    in `AddJsonOptions`) rather than per-property `[JsonConverter]`
+    attributes. The converter MUST accept both numeric and string
+    values on input. Enum members whose display name differs from
+    the C# identifier (e.g., `PG-13` for `Pg13`) MUST use
+    `[JsonStringEnumMemberName]` attributes.
   - DTOs MUST return identifiers (IDs) for related entities
     rather than embedding the related entity's data, wherever
     possible. For example, return `LanguageId` instead of a
@@ -420,4 +420,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.8.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
+**Version**: 1.8.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
