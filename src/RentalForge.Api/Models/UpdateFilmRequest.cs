@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using RentalForge.Api.Data.Entities;
 
 namespace RentalForge.Api.Models;
@@ -17,9 +16,6 @@ public record UpdateFilmRequest
     public decimal RentalRate { get; init; }
     public short? Length { get; init; }
     public decimal ReplacementCost { get; init; }
-
-    [JsonConverter(typeof(JsonStringEnumConverter))]
     public MpaaRating? Rating { get; init; }
-
     public string[]? SpecialFeatures { get; init; }
 }

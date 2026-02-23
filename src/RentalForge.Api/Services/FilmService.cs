@@ -72,7 +72,7 @@ public class FilmService(
                 f.RentalRate,
                 f.Length,
                 f.ReplacementCost,
-                f.Rating != null ? RatingToString(f.Rating.Value) : null,
+                f.Rating,
                 f.SpecialFeatures,
                 f.LastUpdate))
             .ToListAsync();
@@ -99,7 +99,7 @@ public class FilmService(
                 f.RentalRate,
                 f.Length,
                 f.ReplacementCost,
-                f.Rating != null ? RatingToString(f.Rating.Value) : null,
+                f.Rating,
                 f.SpecialFeatures,
                 f.LastUpdate,
                 f.FilmActors
@@ -221,16 +221,6 @@ public class FilmService(
 
         return Result.NoContent();
     }
-
-    private static string RatingToString(MpaaRating rating) => rating switch
-    {
-        MpaaRating.G => "G",
-        MpaaRating.PG => "PG",
-        MpaaRating.Pg13 => "PG-13",
-        MpaaRating.R => "R",
-        MpaaRating.Nc17 => "NC-17",
-        _ => rating.ToString()
-    };
 
     private static string NormalizeRating(string rating) => rating.Trim().ToUpperInvariant() switch
     {

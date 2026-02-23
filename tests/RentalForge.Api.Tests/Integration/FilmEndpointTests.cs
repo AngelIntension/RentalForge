@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,11 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
 {
     private readonly TestWebAppFactory _factory;
     private readonly HttpClient _client;
-    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     public FilmEndpointTests(TestWebAppFactory factory)
     {
@@ -319,7 +324,7 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
         film.RentalRate.Should().Be(3.99m);
         film.Length.Should().Be(120);
         film.ReplacementCost.Should().Be(24.99m);
-        film.Rating.Should().Be("PG");
+        film.Rating.Should().Be(MpaaRating.PG);
         film.SpecialFeatures.Should().Contain("Trailers");
         film.Actors.Should().HaveCount(2);
         film.Actors.Should().Contain("John Smith");
@@ -405,7 +410,7 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
         film.Description.Should().Be("A fully featured test film");
         film.ReleaseYear.Should().Be(2025);
         film.OriginalLanguageName.Should().Be("French");
-        film.Rating.Should().Be("PG-13");
+        film.Rating.Should().Be(MpaaRating.Pg13);
         film.SpecialFeatures.Should().HaveCount(2);
     }
 
@@ -516,7 +521,7 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
 
         var film = await response.Content.ReadFromJsonAsync<FilmDetailResponse>(JsonOptions);
         film.Should().NotBeNull();
-        film!.Rating.Should().Be("PG-13");
+        film!.Rating.Should().Be(MpaaRating.Pg13);
     }
 
     [Fact]
@@ -541,7 +546,7 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
 
         var film = await response.Content.ReadFromJsonAsync<FilmDetailResponse>(JsonOptions);
         film.Should().NotBeNull();
-        film!.Rating.Should().Be("PG-13");
+        film!.Rating.Should().Be(MpaaRating.Pg13);
     }
 
     [Fact]
@@ -622,7 +627,7 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
         film.ReleaseYear.Should().Be(2025);
         film.LanguageName.Should().Be("French");
         film.OriginalLanguageName.Should().Be("English");
-        film.Rating.Should().Be("R");
+        film.Rating.Should().Be(MpaaRating.R);
     }
 
     [Fact]

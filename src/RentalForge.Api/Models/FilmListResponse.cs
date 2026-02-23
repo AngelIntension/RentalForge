@@ -1,3 +1,5 @@
+using RentalForge.Api.Data.Entities;
+
 namespace RentalForge.Api.Models;
 
 /// <summary>
@@ -14,6 +16,6 @@ public record FilmListResponse(
     decimal RentalRate,
     short? Length,
     decimal ReplacementCost,
-    string? Rating,
+    MpaaRating? Rating,
     string[]? SpecialFeatures,
     DateTime LastUpdate);
