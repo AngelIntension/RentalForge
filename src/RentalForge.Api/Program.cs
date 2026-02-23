@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using RentalForge.Api.Data;
 using RentalForge.Api.Data.Entities;
 using RentalForge.Api.Data.Seeding;
@@ -18,14 +19,13 @@ if (string.IsNullOrWhiteSpace(connectionString))
         "\"Host=localhost;Port=5432;Database=dvdrental;Username=postgres;Password=<your-password>\"");
 }
 
-// Register Npgsql data source with PostgreSQL enum mapping
-var dataSourceBuilder = new Npgsql.NpgsqlDataSourceBuilder(connectionString);
-dataSourceBuilder.MapEnum<MpaaRating>("mpaa_rating");
-var dataSource = dataSourceBuilder.Build();
-
-// Register DvdrentalContext with Npgsql
+// Register DvdrentalContext with Npgsql — MapEnum on UseNpgsql configures enum mapping
+// at both the EF Core and Npgsql layers (EF 9.0+ recommended approach).
+// Suppress PendingModelChangesWarning — the dvdrental database was created from an external
+// dump, so EF Core's FK naming conventions will always drift from the dump's conventions.
 builder.Services.AddDbContext<DvdrentalContext>(options =>
-    options.UseNpgsql(dataSource));
+    options.UseNpgsql(connectionString, o => o.MapEnum<MpaaRating>("mpaa_rating"))
+        .ConfigureWarnings(w => w.Log(RelationalEventId.PendingModelChangesWarning)));
 
 // Dev data seeder (used by --seed CLI argument)
 builder.Services.AddScoped<DevDataSeeder>();
@@ -33,11 +33,19 @@ builder.Services.AddScoped<DevDataSeeder>();
 // Customer service
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
+// Film service
+builder.Services.AddScoped<IFilmService, FilmService>();
+
 // FluentValidation (validators injected into service layer, no auto-validation)
 builder.Services.AddValidatorsFromAssemblyContaining<CreateCustomerValidator>();
 
 // Controller-based routing (constitution v1.3.0)
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.WriteIndented = true;
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations());
 

@@ -1,35 +1,25 @@
 <!--
   Sync Impact Report
   ==================
-  Version change: 1.6.0 → 1.7.0 (MINOR — replaced exception-based
-    validation flow with Ardalis.Result pattern; added Result pattern
-    to Technology Stack; added functional error handling guidance to
-    Principle VI)
-  Modified principles:
-    - VI. Functional Style and Immutability: added bullet requiring
-      Result types over exceptions for expected outcomes
+  Version change: 1.8.1 → 1.9.0 (MINOR — added type-fidelity
+    rule to DTO structure: DTO properties that represent enum
+    values MUST use the domain enum type, not string. Prevents
+    manual .ToString() conversion that bypasses the global JSON
+    enum converter.)
+  Modified principles: none
   Added sections: none
   Modified sections:
-    - Technology Stack > Core: added Ardalis.Result ecosystem
-      (Ardalis.Result, Ardalis.Result.AspNetCore,
-      Ardalis.Result.FluentValidation)
-    - Technology Stack > Web Framework (API Backend): replaced
-      ServiceValidationException-based validation with Ardalis.Result
-      pattern. Service methods now MUST return Result<T>/Result instead
-      of throwing exceptions for routine validation, not-found, and
-      business-rule outcomes.
+    - Technology Stack > Web Framework (API Backend) > DTO
+      structure: added new bullet requiring enum-typed DTO
+      properties instead of string representations.
   Removed sections: none
   Templates requiring updates:
     - .specify/templates/plan-template.md — ✅ no updates needed
     - .specify/templates/spec-template.md — ✅ no updates needed
     - .specify/templates/tasks-template.md — ✅ no updates needed
-    - CLAUDE.md — ⚠ pending (should reference Ardalis.Result in
-      Active Technologies and update Key Constraints to reflect
-      Result pattern over exceptions)
-  Follow-up TODOs:
-    - Existing CustomerService and CustomersController use
-      ServiceValidationException. A refactoring feature spec should
-      migrate them to Ardalis.Result.
+    - CLAUDE.md — ✅ updated (enum type-fidelity constraint added
+      to Key Constraints)
+  Follow-up TODOs: none
 -->
 
 # RentalForge Constitution
@@ -230,13 +220,45 @@ enabling compiler-assisted correctness.
   The goal is to return all actionable errors in a single
   round-trip so the API consumer can fix them all at once.
 
+- **DTO structure**: API Data Transfer Objects MUST be kept tight,
+  simple, and flat wherever possible. Specifically:
+  - Enum serialization MUST be configured globally via the JSON
+    serializer options (e.g., registering `JsonStringEnumConverter`
+    in `AddJsonOptions`) rather than per-property `[JsonConverter]`
+    attributes. The converter MUST accept both numeric and string
+    values on input. Enum members whose display name differs from
+    the C# identifier (e.g., `PG-13` for `Pg13`) MUST use
+    `[JsonStringEnumMemberName]` attributes.
+  - DTO properties that represent enum values MUST use the
+    domain enum type (e.g., `MpaaRating?`), not `string`.
+    Manual `.ToString()` conversion in service or mapping code
+    is prohibited — it bypasses the global JSON enum converter
+    and loses type safety.
+  - DTOs MUST return identifiers (IDs) for related entities
+    rather than embedding the related entity's data, wherever
+    possible. For example, return `LanguageId` instead of a
+    nested `Language` object.
+  - When related data MUST be included (e.g., the spec requires
+    displaying actor names or category names alongside a film),
+    and the relationship is one level deep, the related fields
+    MUST be inlined into a flat structure (e.g., `LanguageName`
+    as a top-level string property, `Actors` as a list of
+    strings). Nested DTOs MUST NOT be used for single-level
+    relationships.
+  - When the relationship is more than one level deep (e.g., an
+    actor's filmography with each film's categories), nested
+    structures are permitted and SHOULD be used to preserve
+    clarity.
+
 **Rationale**: Controller-based routing provides a consistent,
 discoverable structure for API endpoints and enforces separation
 of HTTP concerns from domain logic. Result types make error paths
 explicit in method signatures, eliminate exception-based control
 flow for routine outcomes, and enable functional composition via
 `Map`/`Bind`. Aggregate error reporting reduces round-trips and
-improves the developer experience for API consumers.
+improves the developer experience for API consumers. Flat, ID-
+centric DTOs minimize payload size, reduce coupling between API
+layers, and keep the contract simple for frontend consumers.
 
 ### Frontend (React SPA)
 
@@ -404,4 +426,4 @@ and architectural decisions MUST comply with these principles.
 - **Guidance file**: See `CLAUDE.md` for runtime development
   guidance and build commands.
 
-**Version**: 1.7.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-22
+**Version**: 1.9.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-23
