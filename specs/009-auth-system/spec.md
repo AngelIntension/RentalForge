@@ -95,7 +95,7 @@ An authenticated user can view their profile information (email, role, account s
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated user, **When** they navigate to their profile, **Then** they see their email address, assigned role, and account creation date.
+1. **Given** an authenticated user, **When** they navigate to their profile, **Then** they see their email address, assigned role, and account creation date. If the user has a linked dvdrental Customer record, the profile also displays their customer name, store, and address details.
 2. **Given** an unauthenticated visitor, **When** they attempt to access the profile page, **Then** they are redirected to the login page.
 
 ---
@@ -146,7 +146,7 @@ The system limits the rate of authentication-related requests (registration, log
 - **FR-011a**: System MUST implement single-use refresh credential rotation: each successful refresh issues a new refresh credential and invalidates the previous one.
 - **FR-011b**: System MUST detect reuse of a previously consumed refresh credential and, upon detection, invalidate all refresh credentials in that family (all sessions for that user), forcing re-authentication.
 - **FR-012**: System MUST allow authenticated users to view their own profile (email, role, account creation date).
-- **FR-013**: System MUST enforce role-based access control on all management endpoints: Customer (own data only, scoped via explicit User-to-Customer link), Staff (all operational data), Admin (full access including user role assignment).
+- **FR-013**: System MUST enforce role-based access control on all management endpoints: Customer (own data only, scoped via explicit User-to-Customer link), Staff (all operational data), Admin (full access including user role assignment). Customer-role users MUST be able to read their own linked Customer record via the existing customer detail endpoint.
 - **FR-013a**: System MUST support a nullable link from an auth User to a dvdrental Customer record. This link is populated at registration or by an Admin.
 - **FR-013b**: Customer-role users whose account is not yet linked to a dvdrental Customer record MUST be restricted to profile-only access until the link is established.
 - **FR-014**: System MUST redirect unauthenticated users to the login page when they attempt to access protected content.
