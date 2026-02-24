@@ -51,11 +51,12 @@ A staff member views the rental list, optionally filtered by customer or active 
 
 **Acceptance Scenarios**:
 
-1. **Given** the application is loaded, **When** the user navigates to My Rentals, **Then** the system displays a paginated list of rentals with film title, customer name, rental date, and return status
+1. **Given** the application is loaded, **When** the user navigates to Rentals, **Then** the system displays a paginated list of rentals with rental date, return status (active/returned), customer ID, and inventory ID
 2. **Given** the rental list is displayed, **When** the user filters by active rentals only, **Then** the list shows only rentals without a return date
 3. **Given** the user wants to rent a film, **When** they select a customer, film, and store and submit the rental, **Then** the system creates the rental and shows the rental confirmation with details
 4. **Given** an active rental is displayed, **When** the user initiates a return, **Then** the system processes the return and updates the rental to show the return date
 5. **Given** a rental creation fails due to no available inventory, **When** the system responds with an error, **Then** the user sees a clear error message explaining no copies are available
+6. **Given** a rental is displayed in the list, **When** the user taps on it, **Then** the system shows the rental detail view with film title, customer name, staff name, rental date, and return status
 
 ---
 
@@ -71,7 +72,7 @@ A user visits the application URL on their mobile phone browser. The browser pro
 
 1. **Given** a user visits the application URL on a mobile browser, **When** the PWA criteria are met, **Then** the browser offers to install the application
 2. **Given** the user has installed the application, **When** they launch it from their home screen, **Then** the app opens in full-screen mode with the application icon and name
-3. **Given** the application is installed, **When** the user opens it, **Then** previously loaded data is available while new data loads in the background
+3. **Given** the application is installed, **When** the user navigates between pages within a session, **Then** previously fetched data renders instantly from cache while fresh data loads in the background
 
 ---
 
@@ -105,14 +106,14 @@ A user prefers dark mode for nighttime browsing or personal preference. They can
 ### Functional Requirements
 
 - **FR-001**: The application MUST present a mobile-first responsive layout that adapts from phone screens (320px) to desktop monitors (2560px+)
-- **FR-002**: The application MUST provide persistent bottom navigation on mobile viewports with tabs for Home, Browse Films, My Rentals, and Profile
+- **FR-002**: The application MUST provide persistent bottom navigation on mobile viewports with tabs for Home, Browse Films, Rentals, and Profile
 - **FR-003**: The application MUST adapt navigation to a sidebar or top bar on wider desktop viewports
 - **FR-004**: The application MUST display a paginated, searchable film catalog that queries the existing Films API with support for search, category filter, rating filter, and year range filter
 - **FR-005**: The application MUST display a film detail view showing all film attributes including actors, categories, language, and special features
 - **FR-006**: The application MUST display a paginated, searchable customer list that queries the existing Customers API
 - **FR-007**: The application MUST display a customer detail view showing all customer attributes
 - **FR-008**: The application MUST display a paginated rental list with filtering by customer and active status, querying the existing Rentals API
-- **FR-009**: The application MUST provide a form to create a new rental by selecting a customer, film, and store
+- **FR-009**: The application MUST provide a form to create a new rental by selecting a customer, film, store, and staff member (staff selection is a temporary placeholder until authentication auto-populates this in #009)
 - **FR-010**: The application MUST provide the ability to process a rental return on active rentals
 - **FR-011**: All API communication MUST go through a single centralized API client — no scattered direct calls to the backend
 - **FR-012**: The application MUST display clear loading indicators while data is being fetched
@@ -155,7 +156,7 @@ A user prefers dark mode for nighttime browsing or personal preference. They can
 
 ### Session 2026-02-23
 
-- Q: Where does customer management fit in the 4-tab mobile navigation? → A: Customers are accessible via the Home page dashboard link, not a top-level navigation tab. The 4-tab mobile nav (Home, Browse Films, My Rentals, Profile) remains unchanged.
+- Q: Where does customer management fit in the 4-tab mobile navigation? → A: Customers are accessible via the Home page dashboard link, not a top-level navigation tab. The 4-tab mobile nav (Home, Browse Films, Rentals, Profile) remains unchanged.
 - Q: What pagination UX pattern should list views use? → A: Infinite scroll with a "Load More" button fallback across all list views (films, customers, rentals).
 
 ## Assumptions
