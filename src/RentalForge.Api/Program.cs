@@ -52,6 +52,13 @@ builder.Services.AddControllers()
 builder.Services.AddSwaggerGen(options =>
     options.EnableAnnotations());
 
+// CORS for frontend dev server
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod()));
+
 var app = builder.Build();
 
 // Handle --seed CLI argument (exit without starting web server)
@@ -76,6 +83,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.MapControllers();
 
 app.Run();
