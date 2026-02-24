@@ -406,5 +406,12 @@ appsettings.Development.json
 .env
 secrets.json
 
+# Frontend (Node.js/Vite)
+dist/
+build/
+.env.local
+.env.*.local
+coverage/
+
 #Claude Code
 .claude/settings.local.json
