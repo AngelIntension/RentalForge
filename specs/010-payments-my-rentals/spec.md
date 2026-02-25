@@ -19,7 +19,7 @@ A staff member records a payment against a rental when a customer pays. The paym
 
 1. **Given** a staff member is authenticated and a rental exists, **When** they submit a payment with a valid rental ID, positive amount, and their staff ID, **Then** the payment is recorded with the provided details and the current date (if no date specified).
 2. **Given** a staff member submits a payment, **When** the amount is zero or negative, **Then** the system rejects the request with a validation error.
-3. **Given** a staff member submits a payment, **When** the rental ID does not exist, **Then** the system returns a not-found error.
+3. **Given** a staff member submits a payment, **When** the rental ID does not exist, **Then** the system returns a validation error indicating the rental was not found.
 4. **Given** a staff member submits a payment, **When** multiple validation errors exist (e.g., invalid amount AND invalid rental ID), **Then** all errors are returned together in a single response.
 5. **Given** a payment is submitted with no explicit payment date, **When** the system processes it, **Then** the payment date defaults to the current date/time.
 
@@ -101,7 +101,7 @@ When viewing a rental's details, users can see all payments associated with that
 
 ### Edge Cases
 
-- What happens when a payment is submitted for a rental that belongs to a different customer than specified? The system validates that the payment's customer matches the rental's customer and rejects mismatches.
+- How is the customer determined for a payment? The system derives the payment's customer from the referenced rental (FR-004). Since CreatePaymentRequest does not include a customer ID, customer mismatches are impossible by design.
 - What happens when a staff member who is inactive attempts to process a payment? The system rejects the payment with an appropriate error.
 - How does the system handle concurrent payment submissions for the same rental? Each payment is recorded independently; the system does not enforce a maximum total.
 - What happens when the rental rate for a film is zero (free rental)? Payments are still allowed but not required; the outstanding balance shows as zero.
@@ -114,7 +114,7 @@ When viewing a rental's details, users can see all payments associated with that
 - **FR-001**: System MUST allow authenticated staff and admin users to record a payment against an existing rental, capturing the rental reference, amount, processing staff, and payment date.
 - **FR-002**: System MUST reject payments with non-positive amounts, returning a validation error.
 - **FR-003**: System MUST validate that the referenced rental exists before accepting a payment.
-- **FR-004**: System MUST validate that the payment's customer matches the rental's customer.
+- **FR-004**: System MUST derive the payment's customer from the referenced rental, ensuring the payment is correctly attributed to the rental's customer.
 - **FR-005**: System MUST default the payment date to the current date/time when not explicitly provided.
 - **FR-006**: System MUST aggregate all validation and business-rule errors into a single response rather than returning on first failure.
 - **FR-007**: System MUST support listing payments with optional filters for customer, staff member, and rental, with paginated results.
@@ -153,7 +153,7 @@ When viewing a rental's details, users can see all payments associated with that
 
 ## Assumptions
 
-- The existing Payment entity in the database (with fields: payment_id, customer_id, staff_id, rental_id, amount, payment_date) is the correct schema for this feature — no schema migration is needed.
+- The existing Payment entity in the database (with fields: payment_id, customer_id, staff_id, rental_id, amount, payment_date) is the correct schema for this feature — no changes to the payment table. One migration is needed to add a nullable `StaffId` FK to `ApplicationUser` (mirroring the existing `CustomerId` pattern) for reliable Identity-to-Staff linking.
 - The film's rental_rate field is the correct basis for calculating outstanding balances and pre-filling payment amounts.
 - "Outstanding balance" is calculated as rental_rate minus sum of payment amounts for a given rental. Negative balances (overpayment) are displayed but do not trigger refunds.
 - Multiple payments per rental are allowed by design (e.g., partial payments, deposits).
