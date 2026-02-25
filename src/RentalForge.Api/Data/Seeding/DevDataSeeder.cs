@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NpgsqlTypes;
 using RentalForge.Api.Data.Entities;
@@ -10,6 +11,7 @@ namespace RentalForge.Api.Data.Seeding;
 public class DevDataSeeder
 {
     private readonly DvdrentalContext _context;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly ILogger<DevDataSeeder> _logger;
     private static readonly Assembly Assembly = typeof(DevDataSeeder).Assembly;
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -17,9 +19,10 @@ public class DevDataSeeder
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
     };
 
-    public DevDataSeeder(DvdrentalContext context, ILogger<DevDataSeeder> logger)
+    public DevDataSeeder(DvdrentalContext context, UserManager<ApplicationUser> userManager, ILogger<DevDataSeeder> logger)
     {
         _context = context;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -204,7 +207,49 @@ public class DevDataSeeder
         // Reset identity sequences
         await ResetSequencesAsync(ct);
 
+        // Seed auth users after all dvdrental data (customer link needs existing customer)
+        await SeedAuthUsersAsync();
+
         _logger.LogInformation("Development data seeded successfully. Total: {TotalRows:N0} rows.", totalRows);
+    }
+
+    private async Task SeedAuthUsersAsync()
+    {
+        var defaultPassword = "DevP@ss1";
+        var users = new (string Email, string Role, int? CustomerId)[]
+        {
+            ("admin@rentalforge.dev", "Admin", null),
+            ("staff@rentalforge.dev", "Staff", null),
+            ("customer@rentalforge.dev", "Customer", 1),
+        };
+
+        foreach (var (email, role, customerId) in users)
+        {
+            if (await _userManager.FindByEmailAsync(email) is not null)
+            {
+                _logger.LogInformation("  Auth user {Email} already exists, skipping", email);
+                continue;
+            }
+
+            var user = new ApplicationUser
+            {
+                UserName = email,
+                Email = email,
+                CustomerId = customerId,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var result = await _userManager.CreateAsync(user, defaultPassword);
+            if (!result.Succeeded)
+            {
+                _logger.LogWarning("  Failed to create auth user {Email}: {Errors}",
+                    email, string.Join(", ", result.Errors.Select(e => e.Description)));
+                continue;
+            }
+
+            await _userManager.AddToRoleAsync(user, role);
+            _logger.LogInformation("  Auth user {Email} created with role {Role}", email, role);
+        }
     }
 
     private async Task<int> SeedTableAsync<TEntity, TDto>(

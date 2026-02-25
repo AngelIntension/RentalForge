@@ -1,23 +1,39 @@
 import { NavLink } from 'react-router'
-import { Home, Film, Users, ShoppingBag, User } from 'lucide-react'
+import { Home, Film, Users, ShoppingBag, User, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/hooks/use-auth'
+import { Button } from '@/components/ui/button'
+import type { LucideIcon } from 'lucide-react'
 
-const navItems = [
+interface NavItem {
+  to: string
+  icon: LucideIcon
+  label: string
+  roles?: string[]
+}
+
+const navItems: NavItem[] = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/films', icon: Film, label: 'Films' },
-  { to: '/customers', icon: Users, label: 'Customers' },
+  { to: '/customers', icon: Users, label: 'Customers', roles: ['Staff', 'Admin'] },
   { to: '/rentals', icon: ShoppingBag, label: 'Rentals' },
   { to: '/profile', icon: User, label: 'Profile' },
 ]
 
 export function SidebarNav() {
+  const { role, logout } = useAuth()
+
+  const visibleItems = navItems.filter(
+    (item) => !item.roles || (role && item.roles.includes(role)),
+  )
+
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:bg-background">
       <div className="flex h-14 items-center border-b px-6">
         <h1 className="text-lg font-semibold">RentalForge</h1>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {visibleItems.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}
@@ -36,6 +52,16 @@ export function SidebarNav() {
           </NavLink>
         ))}
       </nav>
+      <div className="border-t px-3 py-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-3 text-muted-foreground"
+          onClick={() => void logout()}
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+      </div>
     </aside>
   )
 }

@@ -24,7 +24,8 @@ public class RentalEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifet
     public RentalEndpointTests(TestWebAppFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
+        _client = AuthTestHelper.CreateAuthenticatedClient(
+            factory, "test-staff-id", "staff@test.com", "Staff");
     }
 
     public async Task InitializeAsync()

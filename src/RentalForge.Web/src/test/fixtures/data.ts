@@ -1,6 +1,7 @@
 import type { FilmListItem, FilmDetail } from '@/types/film'
 import type { CustomerListItem } from '@/types/customer'
 import type { RentalListItem, RentalDetail } from '@/types/rental'
+import type { AuthResponse, UserDto } from '@/types/auth'
 
 // ---------------------------------------------------------------------------
 // Films
@@ -163,4 +164,40 @@ export const sampleReturnedRentalDetail: RentalDetail = {
   ...sampleRentalDetail,
   returnDate: '2026-02-23T12:00:00',
   lastUpdate: '2026-02-23T12:00:00',
+}
+
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
+function base64url(obj: Record<string, unknown>): string {
+  const json = JSON.stringify(obj)
+  return btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+export function createTestJwt(overrides?: Partial<{ sub: string; email: string; role: string; exp: number }>): string {
+  const header = { alg: 'HS256', typ: 'JWT' }
+  const payload = {
+    sub: overrides?.sub ?? 'test-user-id-123',
+    email: overrides?.email ?? 'staff@rentalforge.dev',
+    role: overrides?.role ?? 'Staff',
+    jti: 'test-jti-123',
+    iat: Math.floor(Date.now() / 1000),
+    exp: overrides?.exp ?? Math.floor(Date.now() / 1000) + 900,
+  }
+  return `${base64url(header)}.${base64url(payload)}.test-signature`
+}
+
+export const sampleUserDto: UserDto = {
+  id: 'test-user-id-123',
+  email: 'staff@rentalforge.dev',
+  role: 'Staff',
+  customerId: null,
+  createdAt: '2026-02-24T10:00:00Z',
+}
+
+export const sampleAuthResponse: AuthResponse = {
+  token: createTestJwt(),
+  refreshToken: 'valid-refresh-token',
+  user: sampleUserDto,
 }

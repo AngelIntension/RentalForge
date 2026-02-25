@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Ardalis.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentalForge.Api.Models;
 using RentalForge.Api.Services;
@@ -11,12 +13,14 @@ namespace RentalForge.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/customers")]
+[Authorize]
 public class CustomersController(ICustomerService customerService) : ControllerBase
 {
     /// <summary>
-    /// Lists active customers with optional search and pagination.
+    /// Lists active customers with optional search and pagination. Staff and Admin only.
     /// </summary>
     [HttpGet]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "ListCustomers", Summary = "List active customers with search and pagination")]
     [ProducesResponseType(typeof(PagedResponse<CustomerResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -39,7 +43,7 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     }
 
     /// <summary>
-    /// Gets a single active customer by ID.
+    /// Gets a single active customer by ID. Customer-role users can view their own record.
     /// </summary>
     [HttpGet("{id:int}")]
     [SwaggerOperation(OperationId = "GetCustomer", Summary = "Get customer by ID")]
@@ -47,6 +51,14 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found or deactivated")]
     public async Task<IActionResult> GetCustomer(int id)
     {
+        // Customer-role users can only view their own record
+        if (User.IsInRole("Customer"))
+        {
+            var customerIdClaim = GetCurrentUserCustomerId();
+            if (customerIdClaim is null || customerIdClaim != id)
+                return Forbid();
+        }
+
         var result = await customerService.GetCustomerByIdAsync(id);
         return result.Status switch
         {
@@ -57,9 +69,10 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     }
 
     /// <summary>
-    /// Creates a new customer.
+    /// Creates a new customer. Staff and Admin only.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "CreateCustomer", Summary = "Create a new customer")]
     [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -75,9 +88,10 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     }
 
     /// <summary>
-    /// Updates an existing active customer (full replacement).
+    /// Updates an existing active customer (full replacement). Staff and Admin only.
     /// </summary>
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "UpdateCustomer", Summary = "Update customer by ID")]
     [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -95,9 +109,10 @@ public class CustomersController(ICustomerService customerService) : ControllerB
     }
 
     /// <summary>
-    /// Soft-deletes (deactivates) an active customer.
+    /// Soft-deletes (deactivates) an active customer. Staff and Admin only.
     /// </summary>
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "DeactivateCustomer", Summary = "Deactivate customer by ID")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Customer not found or already deactivated")]
@@ -110,6 +125,19 @@ public class CustomersController(ICustomerService customerService) : ControllerB
             ResultStatus.NotFound => NotFound(),
             _ => StatusCode(StatusCodes.Status500InternalServerError)
         };
+    }
+
+    private int? GetCurrentUserCustomerId()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                     ?? User.FindFirst("sub")?.Value;
+        if (userId is null)
+            return null;
+
+        using var scope = HttpContext.RequestServices.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<Microsoft.AspNetCore.Identity.UserManager<Data.Entities.ApplicationUser>>();
+        var user = userManager.FindByIdAsync(userId).GetAwaiter().GetResult();
+        return user?.CustomerId;
     }
 
     private IActionResult InvalidResult(IEnumerable<ValidationError> errors)

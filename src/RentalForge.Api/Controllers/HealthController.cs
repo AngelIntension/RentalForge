@@ -1,4 +1,5 @@
 using System.Data.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data;
@@ -12,6 +13,7 @@ namespace RentalForge.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("")]
+[AllowAnonymous]
 public class HealthController(DvdrentalContext db, ILogger<HealthController> logger) : ControllerBase
 {
     /// <summary>

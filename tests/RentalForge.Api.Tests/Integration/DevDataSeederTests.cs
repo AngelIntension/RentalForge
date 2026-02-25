@@ -1,8 +1,10 @@
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using RentalForge.Api.Data;
+using RentalForge.Api.Data.Entities;
 using RentalForge.Api.Data.Seeding;
 using RentalForge.Api.Tests.Infrastructure;
 
@@ -21,8 +23,9 @@ public class DevDataSeederTests : IClassFixture<TestWebAppFactory>
     {
         var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DvdrentalContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<DevDataSeeder>>();
-        return (context, new DevDataSeeder(context, logger));
+        return (context, new DevDataSeeder(context, userManager, logger));
     }
 
     private async Task EnsureCleanStateAsync(DvdrentalContext context)

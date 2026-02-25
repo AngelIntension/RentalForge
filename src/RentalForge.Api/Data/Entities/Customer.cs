@@ -20,4 +20,5 @@ public class Customer
     public Address Address { get; set; } = null!;
     public ICollection<Payment> Payments { get; set; } = [];
     public ICollection<Rental> Rentals { get; set; } = [];
+    public ApplicationUser? AuthUser { get; set; }
 }
