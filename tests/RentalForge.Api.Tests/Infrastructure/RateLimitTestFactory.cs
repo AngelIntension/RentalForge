@@ -7,12 +7,12 @@ using Testcontainers.PostgreSql;
 
 namespace RentalForge.Api.Tests.Infrastructure;
 
-public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
+/// <summary>
+/// Test factory that preserves production rate limit configuration for rate limit tests.
+/// Unlike TestWebAppFactory, this does NOT override rate limiters with permissive values.
+/// </summary>
+public class RateLimitTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public const string TestJwtKey = "ThisIsATestSigningKeyThatIsAtLeast256BitsLong!!";
-    public const string TestJwtIssuer = "RentalForge.Tests";
-    public const string TestJwtAudience = "RentalForge.Tests";
-
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:18")
         .Build();
 
@@ -20,7 +20,6 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await _postgres.StartAsync();
 
-        // Create the schema from the EF Core model
         var options = new DbContextOptionsBuilder<DvdrentalContext>()
             .UseNpgsql(_postgres.GetConnectionString(),
                 o => o.MapEnum<MpaaRating>("mpaa_rating"))
@@ -32,21 +31,13 @@ public class TestWebAppFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Override the connection string — Program.cs reads from config and configures
-        // UseNpgsql(connectionString, o => o.MapEnum<MpaaRating>()) which handles everything.
         builder.UseSetting("ConnectionStrings:Dvdrental", _postgres.GetConnectionString());
-
-        // JWT configuration for test environment
-        builder.UseSetting("Jwt:Key", TestJwtKey);
-        builder.UseSetting("Jwt:Issuer", TestJwtIssuer);
-        builder.UseSetting("Jwt:Audience", TestJwtAudience);
+        builder.UseSetting("Jwt:Key", TestWebAppFactory.TestJwtKey);
+        builder.UseSetting("Jwt:Issuer", TestWebAppFactory.TestJwtIssuer);
+        builder.UseSetting("Jwt:Audience", TestWebAppFactory.TestJwtAudience);
         builder.UseSetting("Jwt:AccessTokenExpirationMinutes", "15");
         builder.UseSetting("Jwt:RefreshTokenExpirationDays", "7");
-
-        // Override rate limits with very permissive values so non-rate-limit tests aren't throttled
-        builder.UseSetting("RateLimiting:LoginPermitLimit", "10000");
-        builder.UseSetting("RateLimiting:RegisterPermitLimit", "10000");
-        builder.UseSetting("RateLimiting:RefreshPermitLimit", "10000");
+        // No rate limit override — keeps production limits (3/min register, 5/min login, 10/min refresh)
     }
 
     async Task IAsyncLifetime.DisposeAsync()

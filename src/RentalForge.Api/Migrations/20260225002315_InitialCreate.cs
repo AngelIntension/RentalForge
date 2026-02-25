@@ -2,12 +2,13 @@
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using NpgsqlTypes;
+using RentalForge.Api.Data.Entities;
 
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace RentalForge.Api.Data.Migrations
+namespace RentalForge.Api.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -15,8 +16,11 @@ namespace RentalForge.Api.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "identity");
+
             migrationBuilder.AlterDatabase()
-                .Annotation("Npgsql:Enum:mpaa_rating.mpaa_rating", "g,pg,pg13,r,nc17");
+                .Annotation("Npgsql:Enum:mpaa_rating", "G,NC-17,PG,PG-13,R");
 
             migrationBuilder.CreateTable(
                 name: "actor",
@@ -76,6 +80,21 @@ namespace RentalForge.Api.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "roles",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "city",
                 columns: table => new
                 {
@@ -111,10 +130,10 @@ namespace RentalForge.Api.Data.Migrations
                     rental_rate = table.Column<decimal>(type: "numeric(4,2)", nullable: false, defaultValue: 4.99m),
                     length = table.Column<short>(type: "smallint", nullable: true),
                     replacement_cost = table.Column<decimal>(type: "numeric(5,2)", nullable: false, defaultValue: 19.99m),
-                    rating = table.Column<int>(type: "integer", nullable: true, defaultValue: 0),
+                    rating = table.Column<MpaaRating>(type: "mpaa_rating", nullable: true, defaultValue: MpaaRating.G),
                     last_update = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     special_features = table.Column<string[]>(type: "text[]", nullable: true),
-                    fulltext = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: false)
+                    fulltext = table.Column<NpgsqlTsVector>(type: "tsvector", nullable: false, defaultValueSql: "''::tsvector")
                 },
                 constraints: table =>
                 {
@@ -130,6 +149,29 @@ namespace RentalForge.Api.Data.Migrations
                         column: x => x.original_language_id,
                         principalTable: "language",
                         principalColumn: "language_id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "role_claims",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_role_claims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_role_claims_roles_RoleId",
+                        column: x => x.RoleId,
+                        principalSchema: "identity",
+                        principalTable: "roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -231,6 +273,160 @@ namespace RentalForge.Api.Data.Migrations
                         column: x => x.address_id,
                         principalTable: "address",
                         principalColumn: "address_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "users",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    customer_id = table.Column<int>(type: "integer", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_users_customer_customer_id",
+                        column: x => x.customer_id,
+                        principalTable: "customer",
+                        principalColumn: "customer_id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "refresh_tokens",
+                schema: "identity",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    token = table.Column<string>(type: "text", nullable: false),
+                    family = table.Column<string>(type: "text", nullable: false),
+                    user_id = table.Column<string>(type: "text", nullable: false),
+                    expires_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    is_used = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    revoked_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    xmin = table.Column<uint>(type: "xid", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_refresh_tokens", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_refresh_tokens_users_user_id",
+                        column: x => x.user_id,
+                        principalSchema: "identity",
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_claims",
+                schema: "identity",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_claims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_user_claims_users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_logins",
+                schema: "identity",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_logins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_user_logins_users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_roles",
+                schema: "identity",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_roles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_user_roles_roles_RoleId",
+                        column: x => x.RoleId,
+                        principalSchema: "identity",
+                        principalTable: "roles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_user_roles_users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_tokens",
+                schema: "identity",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_tokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_user_tokens_users_UserId",
+                        column: x => x.UserId,
+                        principalSchema: "identity",
+                        principalTable: "users",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -513,6 +709,17 @@ namespace RentalForge.Api.Data.Migrations
                     { 4, new DateTime(2006, 2, 15, 10, 2, 19, 0, DateTimeKind.Utc), "Mandarin            " },
                     { 5, new DateTime(2006, 2, 15, 10, 2, 19, 0, DateTimeKind.Utc), "French              " },
                     { 6, new DateTime(2006, 2, 15, 10, 2, 19, 0, DateTimeKind.Utc), "German              " }
+                });
+
+            migrationBuilder.InsertData(
+                schema: "identity",
+                table: "roles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "role-admin", "role-admin", "Admin", "ADMIN" },
+                    { "role-customer", "role-customer", "Customer", "CUSTOMER" },
+                    { "role-staff", "role-staff", "Staff", "STAFF" }
                 });
 
             migrationBuilder.InsertData(
@@ -1188,6 +1395,25 @@ namespace RentalForge.Api.Data.Migrations
                 column: "staff_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_refresh_tokens_family",
+                schema: "identity",
+                table: "refresh_tokens",
+                column: "family");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_refresh_tokens_token",
+                schema: "identity",
+                table: "refresh_tokens",
+                column: "token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_refresh_tokens_user_id",
+                schema: "identity",
+                table: "refresh_tokens",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_rental_customer_id",
                 table: "rental",
                 column: "customer_id");
@@ -1201,6 +1427,19 @@ namespace RentalForge.Api.Data.Migrations
                 name: "IX_rental_staff_id",
                 table: "rental",
                 column: "staff_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_claims_RoleId",
+                schema: "identity",
+                table: "role_claims",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                schema: "identity",
+                table: "roles",
+                column: "NormalizedName",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_staff_address_id",
@@ -1221,6 +1460,44 @@ namespace RentalForge.Api.Data.Migrations
                 name: "IX_store_manager_staff_id",
                 table: "store",
                 column: "manager_staff_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_claims_UserId",
+                schema: "identity",
+                table: "user_claims",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_logins_UserId",
+                schema: "identity",
+                table: "user_logins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_roles_RoleId",
+                schema: "identity",
+                table: "user_roles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                schema: "identity",
+                table: "users",
+                column: "NormalizedEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_users_customer_id",
+                schema: "identity",
+                table: "users",
+                column: "customer_id",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                schema: "identity",
+                table: "users",
+                column: "NormalizedUserName",
+                unique: true);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_customer_store_store_id",
@@ -1300,6 +1577,30 @@ namespace RentalForge.Api.Data.Migrations
                 name: "payment");
 
             migrationBuilder.DropTable(
+                name: "refresh_tokens",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "role_claims",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "user_claims",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "user_logins",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "user_roles",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "user_tokens",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
                 name: "actor");
 
             migrationBuilder.DropTable(
@@ -1309,10 +1610,18 @@ namespace RentalForge.Api.Data.Migrations
                 name: "rental");
 
             migrationBuilder.DropTable(
-                name: "customer");
+                name: "roles",
+                schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "users",
+                schema: "identity");
 
             migrationBuilder.DropTable(
                 name: "inventory");
+
+            migrationBuilder.DropTable(
+                name: "customer");
 
             migrationBuilder.DropTable(
                 name: "film");

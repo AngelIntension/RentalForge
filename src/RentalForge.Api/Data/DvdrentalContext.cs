@@ -1,10 +1,12 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using RentalForge.Api.Data.Entities;
 using RentalForge.Api.Data.ReferenceData;
 
 namespace RentalForge.Api.Data;
 
-public class DvdrentalContext : DbContext
+public class DvdrentalContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
 {
     public DvdrentalContext(DbContextOptions<DvdrentalContext> options)
         : base(options)
@@ -26,11 +28,100 @@ public class DvdrentalContext : DbContext
     public DbSet<Rental> Rentals => Set<Rental>();
     public DbSet<Staff> Staff => Set<Staff>();
     public DbSet<Store> Stores => Set<Store>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // MUST call base to configure Identity tables
+        base.OnModelCreating(modelBuilder);
+
         // PostgreSQL mpaa_rating enum is configured via UseNpgsql(o => o.MapEnum<MpaaRating>())
         // in Program.cs (EF 9.0+ recommended approach). HasPostgresEnum is no longer needed.
+
+        // =====================================================
+        // Identity tables — identity schema with snake_case names
+        // =====================================================
+
+        modelBuilder.Entity<ApplicationUser>(entity =>
+        {
+            entity.ToTable("users", "identity");
+            entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()");
+
+            entity.HasOne(e => e.Customer)
+                .WithOne(c => c.AuthUser)
+                .HasForeignKey<ApplicationUser>(e => e.CustomerId)
+                .IsRequired(false);
+        });
+
+        modelBuilder.Entity<IdentityRole>(entity =>
+        {
+            entity.ToTable("roles", "identity");
+        });
+
+        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+        {
+            entity.ToTable("user_roles", "identity");
+        });
+
+        modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
+        {
+            entity.ToTable("user_claims", "identity");
+        });
+
+        modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+        {
+            entity.ToTable("user_logins", "identity");
+        });
+
+        modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+        {
+            entity.ToTable("user_tokens", "identity");
+        });
+
+        modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
+        {
+            entity.ToTable("role_claims", "identity");
+        });
+
+        // RefreshToken
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.ToTable("refresh_tokens", "identity");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id").HasDefaultValueSql("gen_random_uuid()");
+            entity.Property(e => e.Token).HasColumnName("token").IsRequired();
+            entity.Property(e => e.Family).HasColumnName("family").IsRequired();
+            entity.Property(e => e.UserId).HasColumnName("user_id").IsRequired();
+            entity.Property(e => e.ExpiresAt).HasColumnName("expires_at");
+            entity.Property(e => e.IsUsed).HasColumnName("is_used").HasDefaultValue(false);
+            entity.Property(e => e.RevokedAt).HasColumnName("revoked_at");
+            entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()");
+
+            entity.Property(e => e.xmin)
+                .HasColumnName("xmin")
+                .HasColumnType("xid")
+                .IsRowVersion();
+
+            entity.HasIndex(e => e.Token).IsUnique().HasDatabaseName("ix_refresh_tokens_token");
+            entity.HasIndex(e => e.Family).HasDatabaseName("ix_refresh_tokens_family");
+            entity.HasIndex(e => e.UserId).HasDatabaseName("ix_refresh_tokens_user_id");
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId);
+        });
+
+        // Seed roles via HasData
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole { Id = "role-admin", Name = "Admin", NormalizedName = "ADMIN", ConcurrencyStamp = "role-admin" },
+            new IdentityRole { Id = "role-staff", Name = "Staff", NormalizedName = "STAFF", ConcurrencyStamp = "role-staff" },
+            new IdentityRole { Id = "role-customer", Name = "Customer", NormalizedName = "CUSTOMER", ConcurrencyStamp = "role-customer" }
+        );
+
+        // =====================================================
+        // Existing dvdrental entities
+        // =====================================================
 
         // Actor
         modelBuilder.Entity<Actor>(entity =>

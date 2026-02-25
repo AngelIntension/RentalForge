@@ -26,7 +26,8 @@ public class FilmEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
     public FilmEndpointTests(TestWebAppFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
+        _client = AuthTestHelper.CreateAuthenticatedClient(
+            factory, "test-staff-id", "staff@test.com", "Staff");
     }
 
     public async Task InitializeAsync()

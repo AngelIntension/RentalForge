@@ -16,23 +16,25 @@ public class DataLayerTests : IClassFixture<TestWebAppFactory>
     }
 
     [Fact]
-    public void DbContext_RegistersAll15DbSets()
+    public void DbContext_RegistersAllDbSets()
     {
         // Arrange
         using var scope = _factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<DvdrentalContext>();
 
-        // Act — get all DbSet<> properties via reflection
+        // Act — get all DbSet<> properties declared on DvdrentalContext (not inherited Identity sets)
         var dbSetProperties = context.GetType()
             .GetProperties()
             .Where(p => p.PropertyType.IsGenericType &&
-                        p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+                        p.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>)
+                        && p.DeclaringType == typeof(DvdrentalContext))
             .ToList();
 
-        // Assert
-        dbSetProperties.Should().HaveCount(15,
-            "dvdrental has 15 tables: actor, address, category, city, country, customer, " +
-            "film, film_actor, film_category, inventory, language, payment, rental, staff, store");
+        // Assert — 15 dvdrental tables + 1 RefreshToken = 16
+        dbSetProperties.Should().HaveCount(16,
+            "dvdrental has 15 tables (actor, address, category, city, country, customer, " +
+            "film, film_actor, film_category, inventory, language, payment, rental, staff, store) " +
+            "plus 1 identity table (refresh_tokens)");
     }
 
     [Fact]

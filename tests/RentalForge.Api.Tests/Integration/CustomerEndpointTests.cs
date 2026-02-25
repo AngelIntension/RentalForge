@@ -19,7 +19,9 @@ public class CustomerEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLif
     public CustomerEndpointTests(TestWebAppFactory factory)
     {
         _factory = factory;
-        _client = factory.CreateClient();
+        // Use an authenticated Staff client for all customer endpoint tests
+        _client = AuthTestHelper.CreateAuthenticatedClient(
+            factory, "test-staff-id", "staff@test.com", "Staff");
     }
 
     public async Task InitializeAsync()

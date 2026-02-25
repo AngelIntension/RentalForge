@@ -1,4 +1,5 @@
 using Ardalis.Result;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RentalForge.Api.Models;
 using RentalForge.Api.Services;
@@ -11,6 +12,7 @@ namespace RentalForge.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/films")]
+[Authorize]
 public class FilmsController(IFilmService filmService) : ControllerBase
 {
     /// <summary>
@@ -66,6 +68,7 @@ public class FilmsController(IFilmService filmService) : ControllerBase
     /// Creates a new film.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "CreateFilm", Summary = "Create a new film")]
     [ProducesResponseType(typeof(FilmDetailResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -84,6 +87,7 @@ public class FilmsController(IFilmService filmService) : ControllerBase
     /// Updates an existing film (full replacement).
     /// </summary>
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "UpdateFilm", Summary = "Update film by ID")]
     [ProducesResponseType(typeof(FilmDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -104,6 +108,7 @@ public class FilmsController(IFilmService filmService) : ControllerBase
     /// Permanently deletes a film (hard delete). Films with inventory records cannot be deleted.
     /// </summary>
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Staff,Admin")]
     [SwaggerOperation(OperationId = "DeleteFilm", Summary = "Delete film by ID")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Film not found")]

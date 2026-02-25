@@ -58,7 +58,7 @@ Seeds three users (if not already present):
 - `staff@rentalforge.dev` (Staff)
 - `customer@rentalforge.dev` (Customer, linked to existing dvdrental Customer)
 
-Password for all: `RentalForge1!`
+Password for all: `DevP@ss1`
 
 ## Verify
 
