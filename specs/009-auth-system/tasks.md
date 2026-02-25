@@ -59,11 +59,11 @@
 - [X] T013 [US1] Implement `RegisterRequestValidator` in `src/RentalForge.Api/Validators/RegisterRequestValidator.cs`: validate Email (required, email format), Password (required, min 8, has upper/lower/digit/special), Role (when present, must be valid role name)
 - [X] T014 [US1] Implement `AuthService.RegisterAsync` in `src/RentalForge.Api/Services/AuthService.cs`: inject `ILogger<AuthService>`, validate with FluentValidation + `.AsErrors()`, check role elevation authorization (non-Admin requesting Staff/Admin → Result.Forbidden), create user via `UserManager`, assign role, generate JWT (using `JsonWebTokenHandler`) with sub/email/role/iat/exp/jti claims, create RefreshToken with new family, return `AuthResponse`. Log: successful registration (email, role), failed registration (validation), forbidden role elevation attempt
 - [X] T015 [US1] Implement `AuthController.Register` in `src/RentalForge.Api/Controllers/AuthController.cs`: `[HttpPost("register")]` `[AllowAnonymous]`, delegate to `IAuthService.RegisterAsync`, result.Status switch (Created → CreatedAtAction to /me, Invalid → InvalidResult, Forbidden → Forbid, Error → 500). Add `[ProducesResponseType<AuthResponse>(201)]`, `[ProducesResponseType(400)]`, `[ProducesResponseType(403)]`, `[ProducesResponseType(429)]` and XML doc summary
-- [ ] T016 [P] [US1] Create frontend auth type definitions in `src/RentalForge.Web/src/types/auth.ts`: `AuthResponse`, `RefreshResponse`, `UserDto`, `LoginRequest`, `RegisterRequest`, `RefreshRequest`, `LogoutRequest`
-- [ ] T017 [P] [US1] Add Zod register schema in `src/RentalForge.Web/src/lib/validators.ts`: `registerSchema` with email (email format), password (min 8, regex for strength), confirmPassword (must match password — frontend-only UX field, not sent to API)
-- [ ] T018 [US1] Write register page component tests in `src/RentalForge.Web/src/pages/register.test.tsx`: renders form fields, shows validation errors on invalid submit, calls API on valid submit, redirects on success, displays server errors. Add MSW handler for POST /api/auth/register in `src/RentalForge.Web/src/test/mocks/handlers.ts`
-- [ ] T019 [US1] Implement register page in `src/RentalForge.Web/src/pages/register.tsx`: form with email/password/confirmPassword fields, Zod validation, call `api.post<AuthResponse>('/api/auth/register', ...)`, display aggregated errors, link to login page
-- [ ] T020 [US1] Add `/register` route in `src/RentalForge.Web/src/app/routes.tsx` (outside RootLayout — public route without nav)
+- [X] T016 [P] [US1] Create frontend auth type definitions in `src/RentalForge.Web/src/types/auth.ts`: `AuthResponse`, `RefreshResponse`, `UserDto`, `LoginRequest`, `RegisterRequest`, `RefreshRequest`, `LogoutRequest`
+- [X] T017 [P] [US1] Add Zod register schema in `src/RentalForge.Web/src/lib/validators.ts`: `registerSchema` with email (email format), password (min 8, regex for strength), confirmPassword (must match password — frontend-only UX field, not sent to API)
+- [X] T018 [US1] Write register page component tests in `src/RentalForge.Web/src/pages/register.test.tsx`: renders form fields, shows validation errors on invalid submit, calls API on valid submit, redirects on success, displays server errors. Add MSW handler for POST /api/auth/register in `src/RentalForge.Web/src/test/mocks/handlers.ts`
+- [X] T019 [US1] Implement register page in `src/RentalForge.Web/src/pages/register.tsx`: form with email/password/confirmPassword fields, Zod validation, call `api.post<AuthResponse>('/api/auth/register', ...)`, display aggregated errors, link to login page
+- [X] T020 [US1] Add `/register` route in `src/RentalForge.Web/src/app/routes.tsx` (outside RootLayout — public route without nav)
 
 **Checkpoint**: Registration fully functional end-to-end. Can register a user and receive valid tokens. All validator + integration tests pass.
 
@@ -85,13 +85,13 @@
 - [X] T023 [US2] Implement `LoginRequestValidator` in `src/RentalForge.Api/Validators/LoginRequestValidator.cs`: Email required + email format, Password required + non-empty
 - [X] T024 [US2] Implement `AuthService.LoginAsync`, `LogoutAsync`, `GetMeAsync` in `src/RentalForge.Api/Services/AuthService.cs`: Login — validate, find user by email, check password via `UserManager`, generic error on failure, generate JWT + RefreshToken, return AuthResponse. Logout — find refresh token, revoke entire family. GetMe — find user by ID, map to UserDto with role from `UserManager.GetRolesAsync`. Log: successful login (userId), failed login (no details beyond "invalid credentials"), logout (userId), family revocation events
 - [X] T025 [US2] Implement `AuthController.Login`, `Logout`, `Me` in `src/RentalForge.Api/Controllers/AuthController.cs`: Login `[HttpPost("login")] [AllowAnonymous]`, Logout `[HttpPost("logout")] [Authorize]`, Me `[HttpGet("me")] [Authorize]` — all use result.Status switch pattern. Add `[ProducesResponseType]` attributes and XML doc summaries per contracts/auth-api.md
-- [ ] T026 [US2] Add Zod login schema in `src/RentalForge.Web/src/lib/validators.ts`: `loginSchema` with email + password validation
-- [ ] T027 [US2] Create `useAuth` hook with `AuthProvider` context in `src/RentalForge.Web/src/hooks/use-auth.tsx`: state for user/token/refreshToken, login/logout/refresh methods, initialize from localStorage on mount, expose isAuthenticated/user/role/login/logout
-- [ ] T028 [US2] Update `api-client.ts` in `src/RentalForge.Web/src/lib/api-client.ts`: add `getToken`/`setToken` accessor functions, attach `Authorization: Bearer <token>` header to all requests when token exists, export token accessors for useAuth integration
-- [ ] T029 [US2] Write login page component tests in `src/RentalForge.Web/src/pages/login.test.tsx`: renders form, shows validation errors, calls API on submit, stores tokens on success, redirects to home, shows server error on 401. Add MSW handlers for POST /api/auth/login and POST /api/auth/logout
-- [ ] T030 [US2] Implement login page in `src/RentalForge.Web/src/pages/login.tsx`: form with email/password, Zod validation, call login from useAuth, display generic error on failure, link to register page
-- [ ] T031 [US2] Add `/login` route in `src/RentalForge.Web/src/app/routes.tsx` (public, outside auth guard), update `src/RentalForge.Web/src/app/providers.tsx` to wrap with `AuthProvider` between QueryClientProvider and RouterProvider
-- [ ] T032 [US2] Write useAuth hook tests in `src/RentalForge.Web/src/hooks/use-auth.test.tsx`: test login stores tokens, logout clears tokens, isAuthenticated reflects state, initializes from localStorage
+- [X] T026 [US2] Add Zod login schema in `src/RentalForge.Web/src/lib/validators.ts`: `loginSchema` with email + password validation
+- [X] T027 [US2] Create `useAuth` hook with `AuthProvider` context in `src/RentalForge.Web/src/hooks/use-auth.tsx`: state for user/token/refreshToken, login/logout/refresh methods, initialize from localStorage on mount, expose isAuthenticated/user/role/login/logout
+- [X] T028 [US2] Update `api-client.ts` in `src/RentalForge.Web/src/lib/api-client.ts`: add `getToken`/`setToken` accessor functions, attach `Authorization: Bearer <token>` header to all requests when token exists, export token accessors for useAuth integration
+- [X] T029 [US2] Write login page component tests in `src/RentalForge.Web/src/pages/login.test.tsx`: renders form, shows validation errors, calls API on submit, stores tokens on success, redirects to home, shows server error on 401. Add MSW handlers for POST /api/auth/login and POST /api/auth/logout
+- [X] T030 [US2] Implement login page in `src/RentalForge.Web/src/pages/login.tsx`: form with email/password, Zod validation, call login from useAuth, display generic error on failure, link to register page
+- [X] T031 [US2] Add `/login` route in `src/RentalForge.Web/src/app/routes.tsx` (public, outside auth guard), update `src/RentalForge.Web/src/app/providers.tsx` to wrap with `AuthProvider` between QueryClientProvider and RouterProvider
+- [X] T032 [US2] Write useAuth hook tests in `src/RentalForge.Web/src/hooks/use-auth.test.tsx`: test login stores tokens, logout clears tokens, isAuthenticated reflects state, initializes from localStorage
 
 **Checkpoint**: Login/logout fully functional. Users can authenticate, see their identity, and end sessions. Frontend auth context manages state across the app. All tests pass.
 
@@ -111,11 +111,11 @@
 
 - [X] T034 [US3] Add `[Authorize]` and role-based policies to existing controllers: `HealthController` — `[AllowAnonymous]`; `CustomersController` — class-level `[Authorize(Roles = "Staff,Admin")]` + override `GetCustomer` to also allow Customer for own record; `FilmsController` — `[Authorize]` on class, `[Authorize(Roles = "Staff,Admin")]` on POST/PUT/DELETE; `RentalsController` — `[Authorize]` on class, `[Authorize(Roles = "Staff,Admin")]` on POST/PUT/DELETE, GET list/detail allow Customer with ownership filtering
 - [X] T035 [US3] Implement Customer ownership scoping: update `CustomersController.GetCustomer(id)` to check if current user is Customer role and requested ID matches their `ApplicationUser.CustomerId`; update `RentalsController` GET endpoints to filter by `CustomerId` when user is Customer role; ownership check MUST also verify the linked Customer record is active (`Activebool = true`) — if soft-deleted, treat as unlinked (restrict to profile-only access). Extract current user info from `ClaimsPrincipal` (sub claim + role claim)
-- [ ] T036 [P] [US3] Create access-denied component in `src/RentalForge.Web/src/components/shared/access-denied.tsx`: display clear "You don't have permission to access this page" message with a link back to home
-- [ ] T037 [US3] Write ProtectedRoute component tests in `src/RentalForge.Web/src/components/auth/protected-route.test.tsx`: redirects to /login when unauthenticated, renders children when authenticated, shows access-denied component when role insufficient
-- [ ] T038 [US3] Create `ProtectedRoute` component in `src/RentalForge.Web/src/components/auth/protected-route.tsx`: check `useAuth().isAuthenticated`, redirect to /login if not, optionally check `allowedRoles` prop and render access-denied component if role not in list
-- [ ] T039 [US3] Update `src/RentalForge.Web/src/app/routes.tsx`: wrap all existing routes (except /login, /register) with `ProtectedRoute`, apply `allowedRoles` where needed (customers/films write routes → Staff+Admin, rentals write → Staff+Admin)
-- [ ] T040 [US3] Update `src/RentalForge.Web/src/components/layout/bottom-nav.tsx` and `src/RentalForge.Web/src/components/layout/sidebar-nav.tsx`: conditionally show/hide nav items based on `useAuth().role` — Customer sees Films + Rentals + Profile; Staff sees all; Admin sees all; show logout button when authenticated
+- [X] T036 [P] [US3] Create access-denied component in `src/RentalForge.Web/src/components/shared/access-denied.tsx`: display clear "You don't have permission to access this page" message with a link back to home
+- [X] T037 [US3] Write ProtectedRoute component tests in `src/RentalForge.Web/src/components/auth/protected-route.test.tsx`: redirects to /login when unauthenticated, renders children when authenticated, shows access-denied component when role insufficient
+- [X] T038 [US3] Create `ProtectedRoute` component in `src/RentalForge.Web/src/components/auth/protected-route.tsx`: check `useAuth().isAuthenticated`, redirect to /login if not, optionally check `allowedRoles` prop and render access-denied component if role not in list
+- [X] T039 [US3] Update `src/RentalForge.Web/src/app/routes.tsx`: wrap all existing routes (except /login, /register) with `ProtectedRoute`, apply `allowedRoles` where needed (customers/films write routes → Staff+Admin, rentals write → Staff+Admin)
+- [X] T040 [US3] Update `src/RentalForge.Web/src/components/layout/bottom-nav.tsx` and `src/RentalForge.Web/src/components/layout/sidebar-nav.tsx`: conditionally show/hide nav items based on `useAuth().role` — Customer sees Films + Rentals + Profile; Staff sees all; Admin sees all; show logout button when authenticated
 
 **Checkpoint**: All endpoints enforce authorization. Frontend routes are protected. Navigation adapts to role. All authorization tests pass.
 
@@ -137,9 +137,9 @@
 - [X] T043 [US4] Implement `RefreshRequestValidator` in `src/RentalForge.Api/Validators/RefreshRequestValidator.cs`: RefreshToken required + non-empty
 - [X] T044 [US4] Implement `AuthService.RefreshAsync` in `src/RentalForge.Api/Services/AuthService.cs`: validate request, look up token in DB, check active (not used, not revoked, not expired), if consumed/revoked → revoke entire family by Family ID + return Unauthorized, mark old token as consumed using optimistic concurrency (`UPDATE WHERE IsUsed = false`, check rows affected — if 0 rows updated, another request already consumed it, treat as reuse and invalidate family), create new RefreshToken with same Family, generate new JWT, return RefreshResponse. Log: successful refresh (userId, family), expired token rejection, reuse detection + family invalidation (WARNING level — potential credential theft)
 - [X] T045 [US4] Implement `AuthController.Refresh` in `src/RentalForge.Api/Controllers/AuthController.cs`: `[HttpPost("refresh")] [AllowAnonymous]`, delegate to `IAuthService.RefreshAsync`, result.Status switch. Add `[ProducesResponseType<RefreshResponse>(200)]`, `[ProducesResponseType(400)]`, `[ProducesResponseType(401)]`, `[ProducesResponseType(429)]` and XML doc summary
-- [ ] T046 [US4] Update api-client in `src/RentalForge.Web/src/lib/api-client.ts`: before each request, check if access token is expiring within 60 seconds (decode exp claim from JWT payload via base64url decode — no signature verification needed, lightweight inline helper), if so call refresh endpoint first, update stored tokens, then proceed with original request. Handle 401 responses by attempting refresh once, then logout if refresh fails.
-- [ ] T047 [US4] Update `useAuth` hook in `src/RentalForge.Web/src/hooks/use-auth.tsx`: on mount, read tokens from localStorage, validate access token expiry, if expired but refresh token exists attempt refresh, set user state from JWT claims (decode sub/email/role without verification — server validates)
-- [ ] T048 [US4] Write frontend token refresh tests in `src/RentalForge.Web/src/lib/api-client.test.ts`: test auto-refresh when token near expiry, test 401 triggers refresh attempt, test failed refresh clears auth state. Add MSW handler for POST /api/auth/refresh.
+- [X] T046 [US4] Update api-client in `src/RentalForge.Web/src/lib/api-client.ts`: before each request, check if access token is expiring within 60 seconds (decode exp claim from JWT payload via base64url decode — no signature verification needed, lightweight inline helper), if so call refresh endpoint first, update stored tokens, then proceed with original request. Handle 401 responses by attempting refresh once, then logout if refresh fails.
+- [X] T047 [US4] Update `useAuth` hook in `src/RentalForge.Web/src/hooks/use-auth.tsx`: on mount, read tokens from localStorage, validate access token expiry, if expired but refresh token exists attempt refresh, set user state from JWT claims (decode sub/email/role without verification — server validates)
+- [X] T048 [US4] Write frontend token refresh tests in `src/RentalForge.Web/src/lib/api-client.test.ts`: test auto-refresh when token near expiry, test 401 triggers refresh attempt, test failed refresh clears auth state. Add MSW handler for POST /api/auth/refresh.
 
 **Checkpoint**: Tokens refresh transparently. Sessions persist across page reloads. Credential reuse is detected and families are invalidated. All tests pass.
 
@@ -153,12 +153,12 @@
 
 ### Tests (TDD Red)
 
-- [ ] T049 [US5] Write profile page tests in `src/RentalForge.Web/src/pages/profile.test.tsx`: renders auth user data (email, role, createdAt) from useAuth, fetches and displays linked customer data when customerId present, shows "no linked customer" message when customerId is null. Add MSW handlers for GET /api/auth/me and GET /api/customers/{id}.
+- [X] T049 [US5] Write profile page tests in `src/RentalForge.Web/src/pages/profile.test.tsx`: renders auth user data (email, role, createdAt) from useAuth, fetches and displays linked customer data when customerId present, shows "no linked customer" message when customerId is null. Add MSW handlers for GET /api/auth/me and GET /api/customers/{id}.
 
 ### Implementation (TDD Green)
 
-- [ ] T050 [US5] Update profile page in `src/RentalForge.Web/src/pages/profile.tsx`: replace placeholder with real data from `useAuth()` for auth info (email, role, createdAt), conditionally fetch `GET /api/customers/{customerId}` via existing `useCustomer` hook when `customerId` is non-null, display customer name/store/address details, show appropriate message when not linked
-- [ ] T051 [US5] Add GET /api/auth/me MSW handler in `src/RentalForge.Web/src/test/mocks/handlers.ts` if not already added in earlier phases
+- [X] T050 [US5] Update profile page in `src/RentalForge.Web/src/pages/profile.tsx`: replace placeholder with real data from `useAuth()` for auth info (email, role, createdAt), conditionally fetch `GET /api/customers/{customerId}` via existing `useCustomer` hook when `customerId` is non-null, display customer name/store/address details, show appropriate message when not linked
+- [X] T051 [US5] Add GET /api/auth/me MSW handler in `src/RentalForge.Web/src/test/mocks/handlers.ts` if not already added in earlier phases
 
 **Checkpoint**: Profile page shows real user data. Linked customer details display when available. Tests pass.
 
@@ -178,7 +178,7 @@
 
 - [X] T053 [US6] Configure rate limiting middleware in `src/RentalForge.Api/Program.cs`: `AddRateLimiter()` with three fixed-window policies — `auth-login` (5/min), `auth-register` (3/min), `auth-refresh` (10/min); add `UseRateLimiter()` in pipeline before `UseAuthentication()`
 - [X] T054 [US6] Apply rate limit policies to `AuthController` endpoints in `src/RentalForge.Api/Controllers/AuthController.cs`: `[EnableRateLimiting("auth-login")]` on Login, `[EnableRateLimiting("auth-register")]` on Register, `[EnableRateLimiting("auth-refresh")]` on Refresh
-- [ ] T055 [US6] Add frontend rate-limit error handling: update `ApiError` handling in `src/RentalForge.Web/src/lib/api-client.ts` to recognize 429 status, display toast notification via Sonner with "Too many requests. Please try again later." message in login and register pages
+- [X] T055 [US6] Add frontend rate-limit error handling: update `ApiError` handling in `src/RentalForge.Web/src/lib/api-client.ts` to recognize 429 status, display toast notification via Sonner with "Too many requests. Please try again later." message in login and register pages
 
 **Checkpoint**: Auth endpoints are rate-limited. 429 responses include Retry-After. Frontend displays clear rate-limit messages. All tests pass.
 
@@ -191,8 +191,8 @@
 - [X] T056 Update `DevDataSeeder` in `src/RentalForge.Api/Data/Seeding/DevDataSeeder.cs`: seed three default auth users (admin@rentalforge.dev/Admin, staff@rentalforge.dev/Staff, customer@rentalforge.dev/Customer linked to existing Customer record) using `UserManager<ApplicationUser>`, skip if already exist
 - [X] T057 Add EF Core migration: run `dotnet ef migrations add AddIdentitySchema` from `src/RentalForge.Api/` and verify migration creates `identity` schema with all expected tables
 - [X] T058 Run full backend test suite (`dotnet test`) — verify all existing tests (206+) still pass alongside new auth tests
-- [ ] T059 Run full frontend test suite (`npm test` in `src/RentalForge.Web/`) — verify all existing tests still pass alongside new auth tests
-- [ ] T060 Validate quickstart.md end-to-end: configure user secrets, run migration, seed users, test curl commands from quickstart, verify all responses match contracts
+- [X] T059 Run full frontend test suite (`npm test` in `src/RentalForge.Web/`) — verify all existing tests still pass alongside new auth tests
+- [X] T060 Validate quickstart.md end-to-end: configure user secrets, run migration, seed users, test curl commands from quickstart, verify all responses match contracts
 
 ---
 

@@ -151,7 +151,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Handle --seed CLI argument (exit without starting web server)
-if (args.Contains("--seed"))
+if (app.Environment.IsDevelopment() && args.Contains("--seed"))
 {
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<DevDataSeeder>();

@@ -10,18 +10,50 @@ import { RentalNew } from '@/pages/rental-new'
 import { RentalDetailPage } from '@/pages/rental-detail'
 import { Profile } from '@/pages/profile'
 import { NotFound } from '@/pages/not-found'
+import { Login } from '@/pages/login'
+import { Register } from '@/pages/register'
+import { ProtectedRoute } from '@/components/auth/protected-route'
 
 export const router = createBrowserRouter([
+  // Public auth routes (no nav/layout)
+  { path: 'login', element: <Login /> },
+  { path: 'register', element: <Register /> },
+  // App routes (with layout, protected)
   {
-    element: <RootLayout />,
+    element: (
+      <ProtectedRoute>
+        <RootLayout />
+      </ProtectedRoute>
+    ),
     children: [
       { index: true, element: <Home /> },
       { path: 'films', element: <FilmsList /> },
       { path: 'films/:id', element: <FilmDetailPage /> },
-      { path: 'customers', element: <CustomersList /> },
-      { path: 'customers/:id', element: <CustomerDetailPage /> },
+      {
+        path: 'customers',
+        element: (
+          <ProtectedRoute allowedRoles={['Staff', 'Admin']}>
+            <CustomersList />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'customers/:id',
+        element: (
+          <ProtectedRoute allowedRoles={['Staff', 'Admin']}>
+            <CustomerDetailPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'rentals', element: <RentalsList /> },
-      { path: 'rentals/new', element: <RentalNew /> },
+      {
+        path: 'rentals/new',
+        element: (
+          <ProtectedRoute allowedRoles={['Staff', 'Admin']}>
+            <RentalNew />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'rentals/:id', element: <RentalDetailPage /> },
       { path: 'profile', element: <Profile /> },
       { path: '*', element: <NotFound /> },

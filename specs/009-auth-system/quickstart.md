@@ -71,7 +71,7 @@ curl -X POST http://localhost:5062/api/auth/register \
 # Login
 curl -X POST http://localhost:5062/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"staff@rentalforge.dev","password":"RentalForge1!"}'
+  -d '{"email":"staff@rentalforge.dev","password":"DevP@ss1"}'
 
 # Use the returned token
 curl http://localhost:5062/api/auth/me \
