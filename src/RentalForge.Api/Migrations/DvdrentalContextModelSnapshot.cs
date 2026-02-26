@@ -321,6 +321,10 @@ namespace RentalForge.Api.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
+                    b.Property<short?>("StaffId")
+                        .HasColumnType("smallint")
+                        .HasColumnName("staff_id");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("boolean");
 
@@ -339,6 +343,9 @@ namespace RentalForge.Api.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("StaffId")
+                        .HasDatabaseName("ix_users_staff_id");
 
                     b.ToTable("users", "identity");
                 });
@@ -5994,7 +6001,13 @@ namespace RentalForge.Api.Migrations
                         .WithOne("AuthUser")
                         .HasForeignKey("RentalForge.Api.Data.Entities.ApplicationUser", "CustomerId");
 
+                    b.HasOne("RentalForge.Api.Data.Entities.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
+
                     b.Navigation("Customer");
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("RentalForge.Api.Data.Entities.City", b =>

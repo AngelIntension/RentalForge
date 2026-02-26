@@ -1,6 +1,7 @@
 import type { FilmListItem, FilmDetail } from '@/types/film'
 import type { CustomerListItem } from '@/types/customer'
-import type { RentalListItem, RentalDetail } from '@/types/rental'
+import type { RentalListItem, RentalDetail, RentalPaymentItem } from '@/types/rental'
+import type { PaymentListItem, PaymentDetail } from '@/types/payment'
 import type { AuthResponse, UserDto } from '@/types/auth'
 
 // ---------------------------------------------------------------------------
@@ -119,6 +120,9 @@ export const sampleRentalListItem: RentalListItem = {
   customerId: 130,
   staffId: 1,
   lastUpdate: '2013-05-26T14:49:45.738',
+  totalPaid: 0,
+  rentalRate: 4.99,
+  outstandingBalance: 4.99,
 }
 
 export const sampleRentalListItems: RentalListItem[] = [
@@ -131,6 +135,9 @@ export const sampleRentalListItems: RentalListItem[] = [
     customerId: 459,
     staffId: 1,
     lastUpdate: '2013-05-26T14:49:45.738',
+    totalPaid: 4.99,
+    rentalRate: 4.99,
+    outstandingBalance: 0,
   },
   {
     id: 3,
@@ -140,7 +147,14 @@ export const sampleRentalListItems: RentalListItem[] = [
     customerId: 408,
     staffId: 2,
     lastUpdate: '2013-05-26T14:49:45.738',
+    totalPaid: 0,
+    rentalRate: 2.99,
+    outstandingBalance: 2.99,
   },
+]
+
+export const sampleRentalPaymentItems: RentalPaymentItem[] = [
+  { id: 5001, amount: 4.99, paymentDate: '2026-02-25T14:30:00Z', staffId: 1 },
 ]
 
 export const sampleRentalDetail: RentalDetail = {
@@ -158,12 +172,63 @@ export const sampleRentalDetail: RentalDetail = {
   staffFirstName: 'Mike',
   staffLastName: 'Hillyer',
   lastUpdate: '2013-05-26T14:49:45.738',
+  totalPaid: 4.99,
+  rentalRate: 4.99,
+  outstandingBalance: 0,
+  payments: sampleRentalPaymentItems,
 }
 
 export const sampleReturnedRentalDetail: RentalDetail = {
   ...sampleRentalDetail,
   returnDate: '2026-02-23T12:00:00',
   lastUpdate: '2026-02-23T12:00:00',
+}
+
+// ---------------------------------------------------------------------------
+// Payments
+// ---------------------------------------------------------------------------
+
+export const samplePaymentListItem: PaymentListItem = {
+  id: 5001,
+  rentalId: 1001,
+  customerId: 42,
+  staffId: 1,
+  amount: 4.99,
+  paymentDate: '2026-02-25T14:30:00Z',
+}
+
+export const samplePaymentListItems: PaymentListItem[] = [
+  samplePaymentListItem,
+  {
+    id: 5002,
+    rentalId: 1002,
+    customerId: 42,
+    staffId: 1,
+    amount: 2.99,
+    paymentDate: '2026-02-24T10:00:00Z',
+  },
+  {
+    id: 5003,
+    rentalId: 1003,
+    customerId: 43,
+    staffId: 2,
+    amount: 0.99,
+    paymentDate: '2026-02-23T08:00:00Z',
+  },
+]
+
+export const samplePaymentDetail: PaymentDetail = {
+  id: 5001,
+  rentalId: 1001,
+  customerId: 42,
+  customerFirstName: 'Jane',
+  customerLastName: 'Doe',
+  staffId: 1,
+  staffFirstName: 'Mike',
+  staffLastName: 'Hillyer',
+  amount: 4.99,
+  paymentDate: '2026-02-25T14:30:00Z',
+  filmTitle: 'Academy Dinosaur',
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +258,7 @@ export const sampleUserDto: UserDto = {
   email: 'staff@rentalforge.dev',
   role: 'Staff',
   customerId: null,
+  staffId: 1,
   createdAt: '2026-02-24T10:00:00Z',
 }
 

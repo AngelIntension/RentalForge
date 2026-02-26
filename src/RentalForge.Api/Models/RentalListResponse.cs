@@ -7,4 +7,7 @@ public record RentalListResponse(
     int InventoryId,
     int CustomerId,
     int StaffId,
-    DateTime LastUpdate);
+    DateTime LastUpdate,
+    decimal TotalPaid = 0,
+    decimal RentalRate = 0,
+    decimal OutstandingBalance = 0);

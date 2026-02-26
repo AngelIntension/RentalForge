@@ -8,7 +8,9 @@ namespace RentalForge.Api.Data.Entities;
 public class ApplicationUser : IdentityUser
 {
     public int? CustomerId { get; set; }
+    public int? StaffId { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public Customer? Customer { get; set; }
+    public Staff? Staff { get; set; }
 }

@@ -46,12 +46,20 @@ public class DvdrentalContext : IdentityDbContext<ApplicationUser, IdentityRole,
         {
             entity.ToTable("users", "identity");
             entity.Property(e => e.CustomerId).HasColumnName("customer_id");
+            entity.Property(e => e.StaffId).HasColumnName("staff_id").HasColumnType("smallint");
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("now()");
 
             entity.HasOne(e => e.Customer)
                 .WithOne(c => c.AuthUser)
                 .HasForeignKey<ApplicationUser>(e => e.CustomerId)
                 .IsRequired(false);
+
+            entity.HasOne(e => e.Staff)
+                .WithMany()
+                .HasForeignKey(e => e.StaffId)
+                .IsRequired(false);
+
+            entity.HasIndex(e => e.StaffId).HasDatabaseName("ix_users_staff_id");
         });
 
         modelBuilder.Entity<IdentityRole>(entity =>

@@ -6,6 +6,16 @@ export interface RentalListItem {
   customerId: number;
   staffId: number;
   lastUpdate: string;
+  totalPaid: number;
+  rentalRate: number;
+  outstandingBalance: number;
+}
+
+export interface RentalPaymentItem {
+  id: number;
+  amount: number;
+  paymentDate: string;
+  staffId: number;
 }
 
 export interface RentalDetail {
@@ -23,6 +33,10 @@ export interface RentalDetail {
   staffFirstName: string;
   staffLastName: string;
   lastUpdate: string;
+  totalPaid: number;
+  rentalRate: number;
+  outstandingBalance: number;
+  payments: RentalPaymentItem[];
 }
 
 export interface CreateRentalRequest {
@@ -30,6 +44,11 @@ export interface CreateRentalRequest {
   storeId: number;
   customerId: number;
   staffId: number;
+}
+
+export interface ReturnRentalRequest {
+  amount?: number;
+  staffId?: number;
 }
 
 export interface RentalSearchParams {

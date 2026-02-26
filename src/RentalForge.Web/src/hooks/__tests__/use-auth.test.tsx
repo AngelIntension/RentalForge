@@ -63,8 +63,41 @@ describe('useAuth', () => {
 
     expect(result.current.isAuthenticated).toBe(true)
     expect(result.current.user?.email).toBe(sampleUserDto.email)
+    expect(result.current.user?.staffId).toBe(sampleUserDto.staffId)
     expect(result.current.role).toBe(sampleUserDto.role)
     expect(result.current.token).toBeTruthy()
+  })
+
+  it('login populates null staffId for non-staff user', async () => {
+    const customerUserDto = { ...sampleUserDto, role: 'Customer' as const, customerId: 42, staffId: null }
+    const customerJwt = createTestJwt({ role: 'Customer' })
+    const customerAuthResponse = {
+      token: customerJwt,
+      refreshToken: 'customer-refresh-token',
+      user: customerUserDto,
+    }
+
+    server.use(
+      http.post(/\/api\/auth\/login/, () => {
+        return HttpResponse.json(customerAuthResponse)
+      }),
+    )
+
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false)
+    })
+
+    await act(async () => {
+      await result.current.login({
+        email: 'customer@rentalforge.dev',
+        password: 'RentalForge1!',
+      })
+    })
+
+    expect(result.current.isAuthenticated).toBe(true)
+    expect(result.current.user?.staffId).toBeNull()
   })
 
   it('logout clears auth state', async () => {

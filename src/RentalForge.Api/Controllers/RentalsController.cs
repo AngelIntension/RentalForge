@@ -107,9 +107,9 @@ public class RentalsController(IRentalService rentalService) : ControllerBase
     [ProducesResponseType(typeof(RentalDetailResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [SwaggerResponse(StatusCodes.Status404NotFound, "Rental not found")]
-    public async Task<IActionResult> ReturnRental(int id)
+    public async Task<IActionResult> ReturnRental(int id, [FromBody] ReturnRentalRequest? request = null)
     {
-        var result = await rentalService.ReturnRentalAsync(id);
+        var result = await rentalService.ReturnRentalAsync(id, request);
         return result.Status switch
         {
             ResultStatus.Ok => Ok(result.Value),

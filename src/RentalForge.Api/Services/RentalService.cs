@@ -11,7 +11,8 @@ namespace RentalForge.Api.Services;
 public class RentalService(
     DvdrentalContext db,
     ILogger<RentalService> logger,
-    IValidator<CreateRentalRequest> createValidator) : IRentalService
+    IValidator<CreateRentalRequest> createValidator,
+    IValidator<ReturnRentalRequest> returnValidator) : IRentalService
 {
     public async Task<PagedResponse<RentalListResponse>> GetRentalsAsync(
         int? customerId, bool activeOnly, int page, int pageSize)
@@ -38,7 +39,10 @@ public class RentalService(
                 r.InventoryId,
                 r.CustomerId,
                 r.StaffId,
-                r.LastUpdate))
+                r.LastUpdate,
+                r.Payments.Sum(p => p.Amount),
+                r.Inventory.Film.RentalRate,
+                r.Inventory.Film.RentalRate - r.Payments.Sum(p => p.Amount)))
             .ToListAsync();
 
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -64,7 +68,20 @@ public class RentalService(
                 r.StaffId,
                 r.Staff.FirstName,
                 r.Staff.LastName,
-                r.LastUpdate))
+                r.LastUpdate,
+                r.Payments.Sum(p => p.Amount),
+                r.Inventory.Film.RentalRate,
+                r.Inventory.Film.RentalRate - r.Payments.Sum(p => p.Amount))
+            {
+                Payments = r.Payments
+                    .OrderBy(p => p.PaymentDate)
+                    .Select(p => new RentalPaymentItem(
+                        p.PaymentId,
+                        p.Amount,
+                        p.PaymentDate,
+                        p.StaffId))
+                    .ToList()
+            })
             .FirstOrDefaultAsync();
 
         return rental is not null
@@ -137,7 +154,7 @@ public class RentalService(
         return Result<RentalDetailResponse>.Created(detail.Value);
     }
 
-    public async Task<Result<RentalDetailResponse>> ReturnRentalAsync(int id)
+    public async Task<Result<RentalDetailResponse>> ReturnRentalAsync(int id, ReturnRentalRequest? request = null)
     {
         var rental = await db.Rentals.FirstOrDefaultAsync(r => r.RentalId == id);
 
@@ -147,6 +164,34 @@ public class RentalService(
         if (rental.ReturnDate is not null)
             return Result<RentalDetailResponse>.Invalid(
                 new ValidationError("rentalId", $"Rental with ID {id} has already been returned."));
+
+        // Validate and process optional payment
+        if (request?.Amount is not null)
+        {
+            var validationResult = await returnValidator.ValidateAsync(request);
+            var allErrors = validationResult.AsErrors();
+
+            if (request.StaffId.HasValue && request.StaffId > 0 &&
+                !await db.Staff.AnyAsync(s => s.StaffId == request.StaffId && s.Active))
+                allErrors.Add(new ValidationError("staffId",
+                    $"Staff member with ID {request.StaffId} does not exist or is inactive."));
+
+            if (allErrors.Count > 0)
+                return Result<RentalDetailResponse>.Invalid(allErrors);
+
+            var payment = new Payment
+            {
+                CustomerId = rental.CustomerId,
+                StaffId = request.StaffId!.Value,
+                RentalId = rental.RentalId,
+                Amount = request.Amount.Value,
+                PaymentDate = DateTime.UtcNow
+            };
+            db.Payments.Add(payment);
+
+            logger.LogInformation("Created payment {PaymentId} during return of rental {RentalId}",
+                payment.PaymentId, rental.RentalId);
+        }
 
         rental.ReturnDate = DateTime.UtcNow;
         rental.LastUpdate = DateTime.UtcNow;

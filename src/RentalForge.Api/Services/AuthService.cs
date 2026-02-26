@@ -73,7 +73,7 @@ public class AuthService(
         return Result<AuthResponse>.Created(new AuthResponse(
             token,
             refreshToken.Token,
-            new UserDto(user.Id, user.Email!, requestedRole, user.CustomerId, user.CreatedAt)));
+            new UserDto(user.Id, user.Email!, requestedRole, user.CustomerId, user.StaffId, user.CreatedAt)));
     }
 
     public async Task<Result<AuthResponse>> LoginAsync(LoginRequest request)
@@ -102,7 +102,7 @@ public class AuthService(
         return Result<AuthResponse>.Success(new AuthResponse(
             token,
             refreshToken.Token,
-            new UserDto(user.Id, user.Email!, role, user.CustomerId, user.CreatedAt)));
+            new UserDto(user.Id, user.Email!, role, user.CustomerId, user.StaffId, user.CreatedAt)));
     }
 
     public async Task<Result<RefreshResponse>> RefreshAsync(RefreshRequest request)
@@ -189,7 +189,7 @@ public class AuthService(
         var role = roles.FirstOrDefault() ?? "Customer";
 
         return Result<UserDto>.Success(
-            new UserDto(user.Id, user.Email!, role, user.CustomerId, user.CreatedAt));
+            new UserDto(user.Id, user.Email!, role, user.CustomerId, user.StaffId, user.CreatedAt));
     }
 
     private string GenerateJwtToken(ApplicationUser user, string role)

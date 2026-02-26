@@ -71,6 +71,7 @@ function userFromToken(token: string): UserDto | null {
     email: payload.email as string,
     role: payload.role as UserDto['role'],
     customerId: (payload.customerId as number) ?? null,
+    staffId: (payload.staffId as number) ?? null,
     createdAt: '',
   }
 }

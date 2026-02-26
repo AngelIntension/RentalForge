@@ -86,6 +86,9 @@ builder.Services.AddScoped<IFilmService, FilmService>();
 // Rental service
 builder.Services.AddScoped<IRentalService, RentalService>();
 
+// Payment service
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
 // Auth service
 builder.Services.AddScoped<IAuthService, AuthService>();
 

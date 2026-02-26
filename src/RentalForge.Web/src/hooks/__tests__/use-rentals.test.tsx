@@ -81,11 +81,22 @@ describe('useCreateRental', () => {
 })
 
 describe('useReturnRental', () => {
-  it('returns a rental', async () => {
+  it('returns a rental without payment', async () => {
     const { result } = renderHook(() => useReturnRental(), { wrapper: createWrapper() })
 
     await act(async () => {
-      result.current.mutate(1)
+      result.current.mutate({ id: 1 })
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(result.current.data?.returnDate).toBe(sampleReturnedRentalDetail.returnDate)
+  })
+
+  it('returns a rental with payment', async () => {
+    const { result } = renderHook(() => useReturnRental(), { wrapper: createWrapper() })
+
+    await act(async () => {
+      result.current.mutate({ id: 1, request: { amount: 4.99, staffId: 1 } })
     })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))

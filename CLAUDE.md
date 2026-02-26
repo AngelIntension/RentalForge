@@ -140,3 +140,6 @@ npm run lint                                           # ESLint
 - **007-rental-crud**: Full Rental CRUD API
 - **008-react-frontend-scaffold**: React/TypeScript SPA with Vite, Tailwind, Shadcn UI, routing, data hooks
 - **009-auth-system**: JWT auth system — Identity + JWT + refresh tokens, React AuthProvider, protected routes, rate limiting
+
+## Recent Changes
+- 010-payments-my-rentals: Added C# 14 / .NET 10.0 (backend), TypeScript 5.9 strict (frontend) + ASP.NET Core 10.0, EF Core 10.0 + Npgsql, FluentValidation 11.3, Ardalis.Result 10.1 (backend); React 19.2, TanStack React Query 5.90, Zod 4.3, Shadcn UI (frontend)

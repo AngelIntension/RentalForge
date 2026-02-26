@@ -9,6 +9,21 @@ export const createRentalSchema = z.object({
 
 export type CreateRentalFormData = z.infer<typeof createRentalSchema>;
 
+export const createPaymentSchema = z.object({
+  rentalId: z.coerce.number().int().positive('Rental ID is required'),
+  amount: z.coerce.number().positive('Amount must be greater than 0'),
+  staffId: z.coerce.number().int().positive('Staff ID is required'),
+});
+
+export type CreatePaymentFormData = z.infer<typeof createPaymentSchema>;
+
+export const returnPaySchema = z.object({
+  amount: z.coerce.number().positive('Amount must be greater than 0'),
+  staffId: z.coerce.number().int().positive('Staff ID is required'),
+});
+
+export type ReturnPayFormData = z.infer<typeof returnPaySchema>;
+
 const passwordRegex = {
   uppercase: /[A-Z]/,
   lowercase: /[a-z]/,

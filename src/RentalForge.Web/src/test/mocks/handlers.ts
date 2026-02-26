@@ -6,6 +6,8 @@ import {
   sampleRentalListItems,
   sampleRentalDetail,
   sampleReturnedRentalDetail,
+  samplePaymentListItems,
+  samplePaymentDetail,
   sampleAuthResponse,
   sampleUserDto,
 } from '../fixtures/data'
@@ -13,6 +15,7 @@ import type { PagedResponse } from '@/types/api'
 import type { FilmListItem, FilmDetail } from '@/types/film'
 import type { CustomerListItem } from '@/types/customer'
 import type { RentalListItem, RentalDetail } from '@/types/rental'
+import type { PaymentListItem, PaymentDetail } from '@/types/payment'
 
 function paginate<T>(items: T[], url: URL): PagedResponse<T> {
   const page = Number(url.searchParams.get('page') ?? '1')
@@ -94,13 +97,25 @@ export const handlers = [
     return HttpResponse.json(sampleRentalDetail satisfies RentalDetail, { status: 201 })
   }),
 
-  // Rentals - return
-  http.put(/\/api\/rentals\/(\d+)\/return$/, ({ request }) => {
+  // Rentals - return (accepts optional body with amount + staffId)
+  http.put(/\/api\/rentals\/(\d+)\/return$/, async ({ request }) => {
     const id = Number(request.url.match(/\/api\/rentals\/(\d+)\/return/)?.[1])
     if (id === sampleReturnedRentalDetail.id) {
       return HttpResponse.json(sampleReturnedRentalDetail satisfies RentalDetail)
     }
     return new HttpResponse(null, { status: 404 })
+  }),
+
+  // Payments - list
+  http.get(/\/api\/payments(\?|$)/, ({ request }) => {
+    const url = new URL(request.url)
+    const response: PagedResponse<PaymentListItem> = paginate(samplePaymentListItems, url)
+    return HttpResponse.json(response)
+  }),
+
+  // Payments - create
+  http.post(/\/api\/payments$/, async () => {
+    return HttpResponse.json(samplePaymentDetail satisfies PaymentDetail, { status: 201 })
   }),
 
   // Auth - register

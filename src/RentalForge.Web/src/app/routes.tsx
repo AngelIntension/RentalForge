@@ -8,6 +8,7 @@ import { CustomerDetailPage } from '@/pages/customer-detail'
 import { RentalsList } from '@/pages/rentals-list'
 import { RentalNew } from '@/pages/rental-new'
 import { RentalDetailPage } from '@/pages/rental-detail'
+import { PaymentsList } from '@/pages/payments-list'
 import { Profile } from '@/pages/profile'
 import { NotFound } from '@/pages/not-found'
 import { Login } from '@/pages/login'
@@ -55,6 +56,14 @@ export const router = createBrowserRouter([
         ),
       },
       { path: 'rentals/:id', element: <RentalDetailPage /> },
+      {
+        path: 'payments',
+        element: (
+          <ProtectedRoute allowedRoles={['Staff', 'Admin']}>
+            <PaymentsList />
+          </ProtectedRoute>
+        ),
+      },
       { path: 'profile', element: <Profile /> },
       { path: '*', element: <NotFound /> },
     ],
