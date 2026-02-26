@@ -33,6 +33,37 @@ export function RentalDetail({ rental }: RentalDetailProps) {
           label="Return Date"
           value={rental.returnDate ? new Date(rental.returnDate).toLocaleString() : 'Not returned'}
         />
+        <DetailRow label="Rental Rate" value={`$${rental.rentalRate.toFixed(2)}`} />
+        <DetailRow label="Total Paid" value={`$${rental.totalPaid.toFixed(2)}`} />
+        <DetailRow
+          label="Outstanding Balance"
+          value={`$${rental.outstandingBalance.toFixed(2)}`}
+        />
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <h2 className="text-xl font-semibold">Payments</h2>
+        {rental.payments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No payments recorded</p>
+        ) : (
+          <div className="space-y-2">
+            {rental.payments.map((payment) => (
+              <div key={payment.id} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {new Date(payment.paymentDate).toLocaleString()} (Staff #{payment.staffId})
+                </span>
+                <span className="font-medium">${payment.amount.toFixed(2)}</span>
+              </div>
+            ))}
+            <Separator />
+            <div className="flex justify-between text-sm font-semibold">
+              <span>Total</span>
+              <span>${rental.payments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

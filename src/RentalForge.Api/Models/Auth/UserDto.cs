@@ -5,4 +5,5 @@ public record UserDto(
     string Email,
     string Role,
     int? CustomerId,
+    int? StaffId,
     DateTime CreatedAt);

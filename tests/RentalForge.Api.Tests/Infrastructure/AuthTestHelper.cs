@@ -17,7 +17,8 @@ public static class AuthTestHelper
         IServiceProvider services,
         string email,
         string role,
-        int? customerId = null)
+        int? customerId = null,
+        int? staffId = null)
     {
         using var scope = services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -32,6 +33,7 @@ public static class AuthTestHelper
             UserName = email,
             Email = email,
             CustomerId = customerId,
+            StaffId = staffId,
             CreatedAt = DateTime.UtcNow
         };
 

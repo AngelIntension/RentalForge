@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api-client'
 import type { PagedResponse } from '@/types/api'
-import type { RentalListItem, RentalDetail, CreateRentalRequest, RentalSearchParams } from '@/types/rental'
+import type { RentalListItem, RentalDetail, CreateRentalRequest, RentalSearchParams, ReturnRentalRequest } from '@/types/rental'
 
 export function useInfiniteRentals(params: Omit<RentalSearchParams, 'page'>) {
   return useInfiniteQuery({
@@ -39,8 +39,8 @@ export function useCreateRental() {
 export function useReturnRental() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (id: number) =>
-      api.put<RentalDetail>(`/api/rentals/${id}/return`),
+    mutationFn: ({ id, request }: { id: number; request?: ReturnRentalRequest }) =>
+      api.put<RentalDetail>(`/api/rentals/${id}/return`, request),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rentals'] })
     },

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router'
-import { Home, Film, Users, ShoppingBag, User, LogOut } from 'lucide-react'
+import { Home, Film, Users, ShoppingBag, DollarSign, User, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -17,6 +17,7 @@ const navItems: NavItem[] = [
   { to: '/films', icon: Film, label: 'Films' },
   { to: '/customers', icon: Users, label: 'Customers', roles: ['Staff', 'Admin'] },
   { to: '/rentals', icon: ShoppingBag, label: 'Rentals' },
+  { to: '/payments', icon: DollarSign, label: 'Payments', roles: ['Staff', 'Admin'] },
   { to: '/profile', icon: User, label: 'Profile' },
 ]
 

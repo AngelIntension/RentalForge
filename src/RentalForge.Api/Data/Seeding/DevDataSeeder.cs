@@ -216,14 +216,14 @@ public class DevDataSeeder
     private async Task SeedAuthUsersAsync()
     {
         var defaultPassword = "DevP@ss1";
-        var users = new (string Email, string Role, int? CustomerId)[]
+        var users = new (string Email, string Role, int? CustomerId, int? StaffId)[]
         {
-            ("admin@rentalforge.dev", "Admin", null),
-            ("staff@rentalforge.dev", "Staff", null),
-            ("customer@rentalforge.dev", "Customer", 1),
+            ("admin@rentalforge.dev", "Admin", null, 1),
+            ("staff@rentalforge.dev", "Staff", null, 1),
+            ("customer@rentalforge.dev", "Customer", 1, null),
         };
 
-        foreach (var (email, role, customerId) in users)
+        foreach (var (email, role, customerId, staffId) in users)
         {
             if (await _userManager.FindByEmailAsync(email) is not null)
             {
@@ -236,6 +236,7 @@ public class DevDataSeeder
                 UserName = email,
                 Email = email,
                 CustomerId = customerId,
+                StaffId = staffId,
                 CreatedAt = DateTime.UtcNow,
             };
 

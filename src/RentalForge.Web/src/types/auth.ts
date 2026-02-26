@@ -3,6 +3,7 @@ export interface UserDto {
   email: string
   role: 'Admin' | 'Staff' | 'Customer'
   customerId: number | null
+  staffId: number | null
   createdAt: string
 }
 

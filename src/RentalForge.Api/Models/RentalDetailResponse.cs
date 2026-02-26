@@ -14,4 +14,10 @@ public record RentalDetailResponse(
     int StaffId,
     string StaffFirstName,
     string StaffLastName,
-    DateTime LastUpdate);
+    DateTime LastUpdate,
+    decimal TotalPaid = 0,
+    decimal RentalRate = 0,
+    decimal OutstandingBalance = 0)
+{
+    public IReadOnlyList<RentalPaymentItem> Payments { get; init; } = [];
+}

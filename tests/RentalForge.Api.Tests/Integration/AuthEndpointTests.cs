@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using RentalForge.Api.Data;
 using RentalForge.Api.Models.Auth;
@@ -56,6 +57,7 @@ public class AuthEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
         result.User.Email.Should().Be(request.Email);
         result.User.Role.Should().Be("Customer");
         result.User.CustomerId.Should().BeNull();
+        result.User.StaffId.Should().BeNull();
         result.User.Id.Should().NotBeNullOrEmpty();
     }
 
@@ -203,6 +205,52 @@ public class AuthEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
     }
 
     [Fact]
+    public async Task Login_UserWithStaffId_ReturnsStaffIdInResponse()
+    {
+        // Seed rental test data to create staff record with ID 9001
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DvdrentalContext>();
+            if (!await db.Staff.AnyAsync(s => s.StaffId == 9001))
+                await RentalTestHelper.SeedTestDataAsync(db);
+        }
+
+        var email = $"staff-link-{Guid.NewGuid():N}@example.com";
+        await AuthTestHelper.CreateTestUserAsync(_factory.Services, email, "Staff", staffId: 9001);
+
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            Email = email,
+            Password = AuthTestHelper.DefaultPassword
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.User.StaffId.Should().Be(9001);
+    }
+
+    [Fact]
+    public async Task Login_UserWithoutStaffId_ReturnsNullStaffId()
+    {
+        var email = $"no-staff-{Guid.NewGuid():N}@example.com";
+        await AuthTestHelper.CreateTestUserAsync(_factory.Services, email, "Customer");
+
+        var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
+        {
+            Email = email,
+            Password = AuthTestHelper.DefaultPassword
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<AuthResponse>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.User.StaffId.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Login_InvalidCredentials_Returns401GenericMessage()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login", new LoginRequest
@@ -318,6 +366,32 @@ public class AuthEndpointTests : IClassFixture<TestWebAppFactory>, IAsyncLifetim
         result!.Id.Should().Be(user.Id);
         result.Email.Should().Be(email);
         result.Role.Should().Be("Admin");
+    }
+
+    [Fact]
+    public async Task Me_UserWithStaffId_ReturnsStaffId()
+    {
+        // Seed rental test data to create staff record with ID 9001
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DvdrentalContext>();
+            if (!await db.Staff.AnyAsync(s => s.StaffId == 9001))
+                await RentalTestHelper.SeedTestDataAsync(db);
+        }
+
+        var email = $"me-staff-{Guid.NewGuid():N}@example.com";
+        var user = await AuthTestHelper.CreateTestUserAsync(
+            _factory.Services, email, "Staff", staffId: 9001);
+        var authedClient = AuthTestHelper.CreateAuthenticatedClient(
+            _factory, user.Id, email, "Staff");
+
+        var response = await authedClient.GetAsync("/api/auth/me");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var result = await response.Content.ReadFromJsonAsync<UserDto>(JsonOptions);
+        result.Should().NotBeNull();
+        result!.StaffId.Should().Be(9001);
     }
 
     [Fact]

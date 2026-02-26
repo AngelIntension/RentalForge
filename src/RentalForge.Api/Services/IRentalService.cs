@@ -8,6 +8,6 @@ public interface IRentalService
     Task<PagedResponse<RentalListResponse>> GetRentalsAsync(int? customerId, bool activeOnly, int page, int pageSize);
     Task<Result<RentalDetailResponse>> GetRentalByIdAsync(int id);
     Task<Result<RentalDetailResponse>> CreateRentalAsync(CreateRentalRequest request);
-    Task<Result<RentalDetailResponse>> ReturnRentalAsync(int id);
+    Task<Result<RentalDetailResponse>> ReturnRentalAsync(int id, ReturnRentalRequest? request = null);
     Task<Result> DeleteRentalAsync(int id);
 }
